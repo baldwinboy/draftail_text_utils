@@ -10,7 +10,6 @@
   const STYLE_KEY = 'style';
   const DATASET_KEY = 'data-entity-type';
 
-  // Decorator: renders the entity's text inline in the editor
   const HighlightColorDecorator = ({ children, contentState, entityKey }) => {
     const entity = contentState.getEntity(entityKey);
     const { backgroundColor: entityColor } = entity.getData();
@@ -28,7 +27,6 @@
     );
   };
 
-  // Source: immediately closes (the control handles the UI)
   const HighlightColorSource = ({ onClose }) => {
     onClose();
     return null;

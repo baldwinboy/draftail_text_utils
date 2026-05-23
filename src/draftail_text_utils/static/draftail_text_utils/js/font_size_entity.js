@@ -10,7 +10,6 @@
   const STYLE_KEY = 'style';
   const DATASET_KEY = 'data-entity-type';
 
-  // Decorator: renders the entity's text inline in the editor
   const FontSizeDecorator = ({ children, contentState, entityKey }) => {
     const entity = contentState.getEntity(entityKey);
     const { size: fontSize } = entity.getData();

@@ -5,7 +5,6 @@ Provides helpers to reduce boilerplate when registering inline-style
 features, converter rules, and control plugins.
 """
 
-import re
 
 from django.utils.html import json_script
 from wagtail.admin.rich_text.converters.html_to_contentstate import (
@@ -18,11 +17,6 @@ from wagtail.admin.rich_text.editors.draftail.features import (
     EntityFeature,
     InlineStyleFeature,
 )
-
-
-def camel_to_kebab(name):
-    """Convert a camelCase string to kebab-case."""
-    return re.sub(r"(?<!^)(?=[A-Z])", "-", name).lower()
 
 
 def control_json_script(type_, label, description, icon, data=None):
