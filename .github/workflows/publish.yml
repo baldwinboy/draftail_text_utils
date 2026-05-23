@@ -3,15 +3,37 @@
 name: Publish to PyPI
 
 on:
-  release:
-    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#release
-    types: [published]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+    steps:
+      - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
+        id: release
+        with:
+          release-type: python
+          package-name: draftail-text-utils
+          extra-files: src/draftail_text_utils/__init__.py
+
   test:
+    needs: [release-please]
+    if: ${{ needs.release-please.outputs.release_created }}
     uses: ./.github/workflows/test.yml
+
   build:
-    needs: test
+    needs: [release-please, test]
+    if: ${{ needs.release-please.outputs.release_created }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -27,8 +49,10 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           path: ./dist
+
   publish:
-    needs: build
+    needs: [release-please, build]
+    if: ${{ needs.release-please.outputs.release_created }}
     runs-on: ubuntu-latest
     permissions:
       contents: none

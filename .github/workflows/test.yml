@@ -6,6 +6,7 @@ on:
       - main
       - 'stable/**'
   pull_request:
+  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -72,12 +73,6 @@ jobs:
         # Supported versions of Python, excluding oldest and newest.
         # See https://devguide.python.org/versions/#supported-versions.
         include:
-          # Skipped: oldest supported versions, tested in test-lowest-deps.
-          - python: '3.11'
-            wagtail: 'Wagtail>=7.0,<7.1'
-          - python: '3.12'
-            wagtail: 'Wagtail>=7.1,<7.2'
-            django: 'Django>=5.2,<5.3'
           - python: '3.13'
             wagtail: 'Wagtail>=7.2,<7.3'
             django: 'Django>=6.0,<6.1'
