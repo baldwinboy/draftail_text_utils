@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.1.0 (2026-05-23)
+
+
+### Bug Fixes
+
+* lint files ([17cf673](https://github.com/baldwinboy/draftail_text_utils/commit/17cf67390f3cdb098fa3da02dec76a982ea75e51))
+
 ## [Unreleased]
 
 ## [0.1.0] - 2026-05-23
