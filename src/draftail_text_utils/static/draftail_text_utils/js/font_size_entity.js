@@ -23,7 +23,6 @@
     );
   };
 
-  // Source: immediately closes (the control handles the UI)
   const FontSizeSource = ({ onClose }) => {
     onClose();
     return null;
