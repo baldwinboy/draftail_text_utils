@@ -1,0 +1,96 @@
+.Draftail--font-size-control {
+  cursor: default !important;
+  position: relative;
+  display: inline-block;
+  background: none !important;
+  border-width: 0 !important;
+  outline-width: 0 !important;
+}
+
+.Draftail--font-size-control-row > * {
+  flex: 0 1 min-content;
+  margin-inline-end: 0;
+}
+
+.Draftail--font-size-control-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: min-content;
+}
+
+.Draftail--font-size-decrement,
+.Draftail--font-size-increment {
+  min-width: min-content;
+  padding-inline: 0.25rem;
+}
+
+.Draftail--font-size-decrement > span,
+.Draftail--font-size-increment > span {
+  margin-top: -0.25rem;
+}
+
+.Draftail--font-size-input-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+input.Draftail--font-size-input {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  height: 1.875rem;
+  font-size: 1rem;
+  min-width: 5rem;
+  padding-inline: 0.25rem;
+}
+input.Draftail--font-size-input::placeholder {
+  font-size: 0.75rem;
+  text-align: center;
+  top: -0.09375rem;
+  position: relative;
+}
+
+.Draftail--font-size-dropdown {
+  position: absolute;
+  z-index: 100;
+  min-width: 180px;
+  max-height: 260px;
+  overflow: auto;
+  margin: 0;
+  padding: 4px 0;
+  background: var(--w-color-surface-page, #fff);
+  border: 1px solid var(--w-color-border-furniture, #ddd);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.Draftail--font-size-dropdown[aria-expanded='false'] {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.Draftail--font-size-option {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.Draftail--font-size-option:hover {
+  background: var(--w-color-surface-menu-hover, #f0f0f0);
+}
+
+.Draftail--font-size-option[aria-selected='true'] {
+  background: var(--w-color-surface-menu-hover, #e8e8e8);
+  font-weight: 600;
+}

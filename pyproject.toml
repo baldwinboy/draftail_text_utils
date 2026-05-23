@@ -1,0 +1,73 @@
+[project]
+name = "draftail-text-utils"
+version = "0.1.0"
+description = "Extends Draftail's text customization"
+readme = "README.md"
+license = "BSD-3-Clause"
+requires-python = ">=3.13"
+authors = [
+    { name = "baldwinboy" },
+]
+keywords = ["wagtail", "draftail", "rich text", "text color", "highlight", "font size", "font family", "text alignment"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Framework :: Django",
+    "Framework :: Django :: 5.0",
+    "Framework :: Django :: 5.1",
+    "Framework :: Django :: 6.0",
+    "Framework :: Wagtail",
+    "Framework :: Wagtail :: 6",
+    "Framework :: Wagtail :: 7",
+]
+dependencies = [
+    "cssutils>=2.15.0",
+    "Django>=5.0",
+    "Wagtail>=6.0",
+    "wagtail-traverse>=1.0.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/baldwinboy/draftail-text-utils"
+Repository = "https://github.com/baldwinboy/draftail-text-utils"
+Changelog = "https://github.com/baldwinboy/draftail-text-utils/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/baldwinboy/draftail-text-utils/tree/main/docs"
+Issues = "https://github.com/baldwinboy/draftail-text-utils/issues"
+
+[dependency-groups]
+dev = [
+    "dj-database-url==2.1.0",
+    "pre-commit==3.4.0",
+    "prek>=0.4.1",
+    "pytest==8.1.1",
+    "pytest-cov==5.0.0",
+    "pytest-django==4.8.0",
+    "ruff>=0.15.9",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.1,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "draftail_text_utils"
+source-exclude = [
+    "draftail_text_utils/static_src",
+    "draftail_text_utils/test",
+    "testmanage.py",
+    ".*",
+    "*.ini",
+    "*.yml",
+]
+
+[tool.uv.build-backend.package-data]
+"draftail_text_utils/static/**" = ["*"]
+"draftail_text_utils/templates/**" = ["*"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "draftail_text_utils.test.settings"

@@ -1,0 +1,109 @@
+.Draftail--highlight-color-control {
+  cursor: default !important;
+  position: relative;
+  display: inline-block;
+  margin-inline-end: 0.625rem;
+  background: none !important;
+  border-width: 0 !important;
+  outline-width: 0 !important;
+}
+
+.Draftail--highlight-color-input-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+input.Draftail--highlight-color-input {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  height: 1.875rem;
+  font-size: 1rem;
+  padding-inline: 0.25rem;
+}
+input.Draftail--highlight-color-input::placeholder {
+  font-size: 0.75rem;
+  text-align: center;
+  top: -0.09375rem;
+  position: relative;
+}
+
+.Draftail--highlight-color-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+}
+
+.Draftail--highlight-color-dropdown[aria-expanded='false'] {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.Draftail--highlight-color-dropdown[aria-expanded='true'] {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  min-width: calc((1.875rem * 4) + 24px);
+  max-height: 260px;
+  overflow: inherit;
+  margin: 0;
+  padding: 0.5rem 4px;
+  background: var(--w-color-surface-page, #fff);
+  border: 1px solid var(--w-color-border-furniture, #ddd);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.Draftail--highlight-color-option-wrapper {
+  flex: 1 0 calc(25% - 12px);
+}
+
+.Draftail--highlight-color-option {
+  position: relative;
+  background: attr(name type(<color>), black) !important;
+  border: 0.3125rem solid var(--w-color-surface-menu-hover, #e8e8e8);
+}
+
+.Draftail--highlight-color-option:hover,
+.Draftail--highlight-color-option.Draftail-ToolbarButton--active {
+  border: 0.3125rem solid var(--w-color-text-button-outline-default, #007d7e) !important;
+}
+
+.Draftail--highlight-color-hr {
+  width: 100%;
+}
+
+.Draftail--highlight-color-option > .Draftail-ToolbarButton__label {
+  display: none;
+}
+
+.Draftail--highlight-color-option.Draftail-ToolbarButton--active
+  > .Draftail-ToolbarButton__label {
+  display: inline-block;
+  position: relative;
+  text-align: center;
+  top: -2px;
+  color: var(--w-color-text-button-outline-default, #007d7e);
+}
+
+color-input::part(gamut) {
+  display: none !important;
+}
+
+color-input::part(panel) {
+  max-inline-size: 15rem ;
+}

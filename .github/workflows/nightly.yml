@@ -1,0 +1,26 @@
+name: Nightly Wagtail Test
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+    # At 01:00, daily
+  workflow_dispatch:
+
+jobs:
+  nightly-wagtail-test:
+    runs-on: ubuntu-latest
+    env:
+      WEBHOOK_EXISTS: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          python-version: '3.11'
+      - run: uv sync --dev
+      - run: uv add git+https://github.com/wagtail/wagtail --branch main
+      - run: uv run pytest -vv
+      - run: ./.github/scripts/report_nightly_build_failure.py
+        if: ${{ failure() && env.WEBHOOK_EXISTS == 'true' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -1,0 +1,3 @@
+.dtu-block_text-align {
+  text-align: attr(data-dtu-text-align type(<custom-ident>), left);
+}
