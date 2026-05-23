@@ -22,14 +22,11 @@ from draftail_text_utils.conf import (
     load_font_urls,
 )
 from draftail_text_utils.rich_text import (
+    font_family,
     font_size,
     highlight_color,
     text_alignment,
     text_color,
-)
-
-from .rich_text import (
-    font_family,
 )
 
 
