@@ -46,7 +46,10 @@
 
     // ── close dropdown when clicking outside ──
     handleClickOutside = (event) => {
-      if (this.controlRef.current && !this.controlRef.current.contains(event.target)) {
+      if (
+        this.controlRef.current &&
+        !this.controlRef.current.contains(event.target)
+      ) {
         this.setState({ isOpen: false });
       }
     };
@@ -90,22 +93,24 @@
       const dropdown = React.createElement(
         'ul',
         {
-          className: 'Draftail--font-family-dropdown',
+          'className': 'Draftail--font-family-dropdown',
           'aria-expanded': isOpen,
         },
         options.map((opt) =>
           React.createElement(
             'li',
             {
-              key: opt.type,
-              onMouseDown: (e) => {
+              'key': opt.type,
+              'onMouseDown': (e) => {
                 // Prevent the blur on the button before the click is processed
                 e.preventDefault();
                 this.handleOptionClick(opt);
               },
-              style: { fontFamily: opt.style.fontFamily },
-              className: 'Draftail--font-family-option',
-              'aria-selected': activeOption ? activeOption.type === opt.type : false,
+              'style': { fontFamily: opt.style.fontFamily },
+              'className': 'Draftail--font-family-option',
+              'aria-selected': activeOption
+                ? activeOption.type === opt.type
+                : false,
             },
             opt.label,
           ),

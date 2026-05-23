@@ -16,7 +16,8 @@
     const { backgroundColor: entityColor } = entity.getData();
     if (!entityColor) return children;
 
-    const backgroundColor = entityColor == 'transparent' ? '#00000000' : entityColor;
+    const backgroundColor =
+      entityColor == 'transparent' ? '#00000000' : entityColor;
     return React.createElement(
       'span',
       {

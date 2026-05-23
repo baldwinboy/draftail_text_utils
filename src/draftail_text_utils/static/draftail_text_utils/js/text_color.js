@@ -302,8 +302,8 @@
       var dropdown = React.createElement(
         'ul',
         {
-          id: 'Draftail--text-color-dropdown',
-          className: 'Draftail--text-color-dropdown',
+          'id': 'Draftail--text-color-dropdown',
+          'className': 'Draftail--text-color-dropdown',
           'aria-expanded': isDropdownExpanded,
         },
         options.map(this.createOptElement),

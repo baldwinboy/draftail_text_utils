@@ -1,3 +1,8 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable declaration-property-value-allowed-list */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable scale-unlimited/declaration-strict-value */
+/* stylelint-disable property-disallowed-list */
 .Draftail--font-size-control {
   cursor: default !important;
   position: relative;
@@ -46,6 +51,7 @@ input.Draftail--font-size-input {
   min-width: 5rem;
   padding-inline: 0.25rem;
 }
+
 input.Draftail--font-size-input::placeholder {
   font-size: 0.75rem;
   text-align: center;

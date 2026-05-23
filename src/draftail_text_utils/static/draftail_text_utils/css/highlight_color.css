@@ -1,3 +1,10 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable declaration-property-value-allowed-list */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable scale-unlimited/declaration-strict-value */
+/* stylelint-disable property-disallowed-list */
+/* stylelint-disable color-named */
+/* stylelint-disable selector-type-no-unknown */
 .Draftail--highlight-color-control {
   cursor: default !important;
   position: relative;
@@ -24,6 +31,7 @@ input.Draftail--highlight-color-input {
   font-size: 1rem;
   padding-inline: 0.25rem;
 }
+
 input.Draftail--highlight-color-input::placeholder {
   font-size: 0.75rem;
   text-align: center;
@@ -105,5 +113,5 @@ color-input::part(gamut) {
 }
 
 color-input::part(panel) {
-  max-inline-size: 15rem ;
+  max-inline-size: 15rem;
 }

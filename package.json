@@ -11,7 +11,7 @@
   "scripts": {
     "lint": "npm run lint:format && npm run lint:css",
     "lint:format": "prettier --check \"**/?(.)*.{css,scss,js,ts,tsx,json,yaml,yml}\"",
-    "lint:css": "stylelint --allow-empty-input \"**/?(.)*.{css,scss}\"",
+    "lint:css": "stylelint --fix lax \"**/?(.)*.{css,scss}\"",
     "format": "prettier --write \"**/?(.)*.{css,scss,js,ts,tsx,json,yaml,yml}\""
   }
 }

@@ -183,8 +183,8 @@
     }
 
     applyFontSize(size) {
-      console.log(size)
-      var editorState = restoreSelection(this.props.getEditorState())
+      console.log(size);
+      var editorState = restoreSelection(this.props.getEditorState());
       var currentSize = this.getActiveSize(editorState);
       editorState = removeFontSizeEntity(editorState);
 
@@ -223,24 +223,18 @@
 
     increment() {
       var activeSize = this.getActiveSize();
-      var currentSize = isNaN(activeSize || this.state.inputValue || "NaN") ? 16 : parseInt(activeSize || this.state.inputValue);
-      this.applyFontSize(
-        Math.min(
-          MAX_FONT_SIZE,
-          currentSize + 1,
-        ),
-      );
+      var currentSize = isNaN(activeSize || this.state.inputValue || 'NaN')
+        ? 16
+        : parseInt(activeSize || this.state.inputValue);
+      this.applyFontSize(Math.min(MAX_FONT_SIZE, currentSize + 1));
     }
 
     decrement() {
       var activeSize = this.getActiveSize();
-      var currentSize = isNaN(activeSize || this.state.inputValue || "NaN") ? 16 : parseInt(activeSize || this.state.inputValue);
-      this.applyFontSize(
-        Math.max(
-          MIN_FONT_SIZE,
-          currentSize - 1,
-        ),
-      );
+      var currentSize = isNaN(activeSize || this.state.inputValue || 'NaN')
+        ? 16
+        : parseInt(activeSize || this.state.inputValue);
+      this.applyFontSize(Math.max(MIN_FONT_SIZE, currentSize - 1));
     }
 
     // event handlers
@@ -313,8 +307,8 @@
       var dropdown = React.createElement(
         'ul',
         {
-          id: 'Draftail--font-size-dropdown',
-          className: 'Draftail--font-size-dropdown',
+          'id': 'Draftail--font-size-dropdown',
+          'className': 'Draftail--font-size-dropdown',
           'aria-expanded': isDropdownExpanded,
         },
         options.map(
@@ -322,12 +316,12 @@
             return React.createElement(
               'li',
               {
-                key: `FONT_SIZE_OPT_${opt.size}`,
-                onMouseDown: (e) => {
+                'key': `FONT_SIZE_OPT_${opt.size}`,
+                'onMouseDown': (e) => {
                   e.preventDefault();
                   this.applyFontSize(opt.size);
                 },
-                className: 'Draftail--font-size-option',
+                'className': 'Draftail--font-size-option',
                 'aria-selected': inputDisplay === opt.size,
               },
               opt.label,
@@ -359,8 +353,8 @@
       var input = React.createElement(
         'div',
         {
-          key: 'FONT_SIZE_CTRL_INPUT_WRAPPER',
-          className: 'Draftail--font-size-input-wrapper',
+          'key': 'FONT_SIZE_CTRL_INPUT_WRAPPER',
+          'className': 'Draftail--font-size-input-wrapper',
           'data-draftail-balloon': 'up',
           'aria-label': control.label,
           'aria-controls': 'Draftail--font-size-dropdown',

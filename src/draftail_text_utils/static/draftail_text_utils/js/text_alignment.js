@@ -85,7 +85,7 @@
       const dropdown = React.createElement(
         'ul',
         {
-          className: 'Draftail--text-alignment-dropdown',
+          'className': 'Draftail--text-alignment-dropdown',
           'aria-expanded': isOpen,
         },
         options.map((opt) =>
