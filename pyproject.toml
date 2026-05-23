@@ -1,6 +1,6 @@
 [project]
 name = "draftail-text-utils"
-version = "0.1.4"
+version = "0.1.5"
 description = "Extends Draftail's text customization"
 readme = "README.md"
 license = "BSD-3-Clause"
