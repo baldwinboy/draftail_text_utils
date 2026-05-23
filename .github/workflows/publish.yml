@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
-          version-file: .python-version
+          python-version: '3.14'
       - run: uv build
       # Smoke tests with ready-to-publish package.
       - run: uv run --isolated --no-project --with dist/*.whl python -c "import draftail_text_utils; print('OK')"
