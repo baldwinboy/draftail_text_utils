@@ -5,7 +5,6 @@ Provides helpers to reduce boilerplate when registering inline-style
 features, converter rules, and control plugins.
 """
 
-
 from django.utils.html import json_script
 from wagtail.admin.rich_text.converters.html_to_contentstate import (
     BlockElementHandler,
