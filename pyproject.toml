@@ -28,7 +28,7 @@ classifiers = [
 dependencies = [
     "cssutils>=2.15.0",
     "Django>=5.0",
-    "Wagtail>=6.0",
+    "Wagtail>=7.3.2",
     "wagtail-traverse>=1.0.1",
 ]
 
