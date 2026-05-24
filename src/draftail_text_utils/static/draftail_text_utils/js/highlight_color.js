@@ -135,7 +135,7 @@
     }
 
     componentDidUpdate() {
-      this.syncInputValue(); // always runs, but guarded internally
+      this.syncInputValue();
     }
 
     // helpers
