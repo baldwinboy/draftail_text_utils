@@ -251,8 +251,9 @@ from wagtail.fields import RichTextField
 body = RichTextField(features=[
     "bold", "italic", "h2", "h3",
     # draftail_text_utils features:
-    "text-color", "custom-text-color",
-    "highlight-color", "custom-highlight-color",
+    "styled-link",
+    "text-color",
+    "highlight-color",
     "font-family",
     "font-size",
     "text-alignment",

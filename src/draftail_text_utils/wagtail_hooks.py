@@ -27,6 +27,7 @@ from draftail_text_utils.rich_text import (
     highlight_color,
     text_alignment,
     text_color,
+    text_style,
 )
 
 
@@ -37,6 +38,7 @@ def register_icons(icons):
         "draftail_text_utils/icons/align-justify.svg",
         "draftail_text_utils/icons/align-left.svg",
         "draftail_text_utils/icons/align-right.svg",
+        "draftail_text_utils/icons/anchor.svg",
         "draftail_text_utils/icons/font.svg",
         "draftail_text_utils/icons/highlighter.svg",
         "draftail_text_utils/icons/palette.svg",
@@ -47,6 +49,11 @@ def register_icons(icons):
 # ---------------------------------------------------------------------------
 # Feature registration
 # ---------------------------------------------------------------------------
+
+
+@hooks.register("register_rich_text_features")
+def register_text_style_feature(features):
+    text_style.register(features)
 
 
 @hooks.register("register_rich_text_features")
@@ -100,6 +107,19 @@ def global_admin_css():
         if feature_enabled(feature_name):
             links.add(f'<link rel="stylesheet" href="{_feature_static(css_path)}">')
 
+            if feature_name == "TEXT_COLOR" or feature_name == "HIGHLIGHT_COLOR":
+                links.add(
+                    f'<link rel="stylesheet" href="{_feature_static("css/color.css")}">'
+                )
+
+    # Add common assets if not empty
+    if len(links) > 0:
+        links.add(f'<link rel="stylesheet" href="{_feature_static("css/common.css")}">')
+        links.add(
+            f'<link rel="preload" href="{_feature_static("js/common.js")}" as="script">'
+        )
+        links.add(f'<script src="{_feature_static("js/common.js")}"></script>')
+
     # Load font stylesheets
     for url in load_font_urls():
         if url:
@@ -124,14 +144,6 @@ def global_admin_js():
 
     if feature_enabled("TEXT_COLOR") or feature_enabled("HIGHLIGHT_COLOR"):
         colors = load_color_palette()
-        scripts.append(
-            format_html(
-                "<script type='module'>{}</script>",
-                mark_safe(
-                    "import 'https://cdn.jsdelivr.net/gh/argyleink/css-color-component/dist/index.js';"
-                ),
-            )
-        )
         scripts.append(_color_script(colors))
 
         if feature_enabled("TEXT_COLOR"):
