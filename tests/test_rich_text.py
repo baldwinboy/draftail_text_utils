@@ -11,6 +11,7 @@ from draftail_text_utils.rich_text import (
     highlight_color,
     text_alignment,
     text_color,
+    text_style,
 )
 
 
@@ -48,27 +49,11 @@ class FakeFeatures:
 
 
 class TestTextColorRegistration:
-    def test_registers_entity_feature(self):
-        features = FakeFeatures()
-        text_color.register(features)
-        assert "text-color-entity" in features.plugins
-        assert "text-color-entity" in features.default_features
-
     def test_registers_control_plugin(self):
         features = FakeFeatures()
         text_color.register(features)
         assert "text-color" in features.plugins
         assert "text-color" in features.default_features
-
-    def test_creates_converter_rules(self):
-        features = FakeFeatures()
-        text_color.register(features)
-        assert "text-color-entity" in features.converter_rules
-        rule = features.converter_rules["text-color-entity"]
-        assert "from_database_format" in rule
-        assert "to_database_format" in rule
-        assert "entity_decorators" in rule["to_database_format"]
-        assert "TEXT_COLOR" in rule["to_database_format"]["entity_decorators"]
 
     def test_disabled_via_settings(self):
         with override_settings(DRAFTAIL_TEXT_UTILS={"FEATURES": {"TEXT_COLOR": False}}):
@@ -78,29 +63,11 @@ class TestTextColorRegistration:
 
 
 class TestHighlightColorRegistration:
-    def test_registers_entity_feature(self):
-        features = FakeFeatures()
-        highlight_color.register(features)
-        assert "highlight-color-entity" in features.plugins
-        assert "highlight-color-entity" in features.default_features
-
     def test_registers_control_plugin(self):
         features = FakeFeatures()
         highlight_color.register(features)
         assert "highlight-color" in features.plugins
         assert "highlight-color" in features.default_features
-
-    def test_entity_handler_parses_style(self):
-        handler = highlight_color.HighlightColorEntityHandler("HIGHLIGHT_COLOR")
-        data = handler.get_attribute_data({"style": "background-color: #123456;"})
-        assert data["backgroundColor"] == "#123456"
-
-    def test_entity_decorator_creates_span(self):
-        el = highlight_color.highlight_color_entity_decorator(
-            {"backgroundColor": "#00ff00", "children": "text"}
-        )
-        assert el.type == "span"
-        assert "background-color: #00ff00" in el.attr.get("style", "")
 
 
 class TestFontFamilyRegistration:
@@ -142,41 +109,11 @@ class TestFontFamilyRegistration:
 
 
 class TestFontSizeRegistration:
-    def test_registers_entity_feature(self):
-        features = FakeFeatures()
-        font_size.register(features)
-        assert "font-size-entity" in features.default_features
-        assert "font-size-entity" in features.plugins
-        plugin = features.plugins["font-size-entity"]
-        assert plugin.data["type"] == "FONT_SIZE"
-
     def test_registers_control_plugin(self):
         features = FakeFeatures()
         font_size.register(features)
         assert "font-size" in features.plugins
         assert "font-size" in features.default_features
-
-    def test_entity_handler_parses_style(self):
-        handler = font_size.FontSizeEntityHandler("FONT_SIZE")
-        data = handler.get_attribute_data({"style": "font-size: 16px;"})
-        assert data["size"] == "16px"
-
-    def test_entity_handler_parses_style_without_semicolon(self):
-        handler = font_size.FontSizeEntityHandler("FONT_SIZE")
-        data = handler.get_attribute_data({"style": "font-size: 16px"})
-        assert data["size"] == "16px"
-
-    def test_entity_decorator_creates_span(self):
-        el = font_size.font_size_entity_decorator({"size": "16px", "children": "Hello"})
-        assert el.type == "span"
-        assert el.attr.get("data-entity-type") == "FONT_SIZE"
-        assert "font-size: 16px;" in el.attr.get("style", "")
-
-    def test_entity_decorator_handles_no_size(self):
-        el = font_size.font_size_entity_decorator({"children": "text"})
-        assert el.type == "span"
-        assert el.attr.get("data-entity-type") == "FONT_SIZE"
-        assert "style" not in el.attr
 
     def test_custom_range_via_settings(self):
         with override_settings(
@@ -191,8 +128,84 @@ class TestFontSizeRegistration:
         ):
             features = FakeFeatures()
             font_size.register(features)
-            assert "font-size-entity" in features.default_features
             assert "font-size" in features.default_features
+
+
+class TestTextStyleRegistration:
+    def test_registers_entity_feature(self):
+        features = FakeFeatures()
+        text_style.register(features)
+        assert "text-style-entity" in features.plugins
+        assert "text-style-entity" in features.default_features
+
+    def test_creates_converter_rules(self):
+        features = FakeFeatures()
+        text_style.register(features)
+        assert "text-style-entity" in features.converter_rules
+        rule = features.converter_rules["text-style-entity"]
+        assert "from_database_format" in rule
+        assert "to_database_format" in rule
+        assert "entity_decorators" in rule["to_database_format"]
+        assert "TEXT_STYLE" in rule["to_database_format"]["entity_decorators"]
+
+    def test_entity_handler_parses_color(self):
+        handler = text_style.TextStyleEntityHandler("TEXT_STYLE")
+        data = handler.get_attribute_data({"style": "color: #a1b2c3;"})
+        assert data["color"] == "#a1b2c3"
+
+    def test_entity_handler_parses_background_color(self):
+        handler = text_style.TextStyleEntityHandler("TEXT_STYLE")
+        data = handler.get_attribute_data({"style": "background-color: #123abc;"})
+        assert data["backgroundColor"] == "#123abc"
+
+    def test_entity_handler_parses_font_size(self):
+        handler = text_style.TextStyleEntityHandler("TEXT_STYLE")
+        data = handler.get_attribute_data({"style": "font-size: 18px;"})
+        assert data["size"] == "18px"
+
+    def test_entity_handler_parses_combined_style(self):
+        handler = text_style.TextStyleEntityHandler("TEXT_STYLE")
+        data = handler.get_attribute_data(
+            {"style": "color: #a1b2c3; background-color: #123abc; font-size: 18px;"}
+        )
+        assert data["color"] == "#a1b2c3"
+        assert data["backgroundColor"] == "#123abc"
+        assert data["size"] == "18px"
+
+    def test_entity_handler_returns_url_on_parse_error(self):
+        handler = text_style.TextStyleEntityHandler("TEXT_STYLE")
+        data = handler.get_attribute_data({"style": "invalid"})
+        assert data == {"url": ""}
+
+    def test_entity_decorator_creates_span_with_color(self):
+        el = text_style.text_style_entity_decorator(
+            {"color": "#ff0000", "children": "text"}
+        )
+        assert el.type == "span"
+        assert el.attr.get("data-entity-type") == "TEXT_STYLE"
+        assert "color: #ff0000 !important" in el.attr.get("style", "")
+
+    def test_entity_decorator_creates_span_with_all_properties(self):
+        el = text_style.text_style_entity_decorator(
+            {
+                "color": "#ff0000",
+                "backgroundColor": "#00ff00",
+                "size": "18px",
+                "children": "text",
+            }
+        )
+        assert el.type == "span"
+        assert el.attr.get("data-entity-type") == "TEXT_STYLE"
+        style = el.attr.get("style", "")
+        assert "color: #ff0000 !important" in style
+        assert "background-color: #00ff00 !important" in style
+        assert "font-size: 18px !important" in style
+
+    def test_entity_decorator_handles_no_properties(self):
+        el = text_style.text_style_entity_decorator({"children": "text"})
+        assert el.type == "span"
+        assert el.attr.get("data-entity-type") == "TEXT_STYLE"
+        assert "style" not in el.attr
 
 
 class TestTextAlignmentRegistration:
@@ -244,11 +257,13 @@ class TestFeatureDisabling:
             }
         ):
             features = FakeFeatures()
+            text_style.register(features)
             text_color.register(features)
             highlight_color.register(features)
             font_family.register(features)
             font_size.register(features)
             text_alignment.register(features)
+            assert "text-style-entity" in features.default_features  # always registered
             assert "text-color" not in features.default_features
             assert "highlight-color" not in features.default_features
             assert "font-family" not in features.default_features
@@ -322,30 +337,250 @@ class TestHookAssetInjection:
 class TestConverterRoundTrip:
     """Test that database HTML can round-trip through the converter."""
 
-    def test_text_color_entity_rule_registered(self):
+    def test_text_style_entity_rule_registered(self):
         features = FakeFeatures()
-        text_color.register(features)
-        rule = features.converter_rules["text-color-entity"]
+        text_style.register(features)
+        rule = features.converter_rules["text-style-entity"]
         assert "from_database_format" in rule
         assert "to_database_format" in rule
-        assert "TEXT_COLOR" in rule["to_database_format"]["entity_decorators"]
+        assert "TEXT_STYLE" in rule["to_database_format"]["entity_decorators"]
 
-    def test_highlight_color_entity_rule_registered(self):
-        features = FakeFeatures()
-        highlight_color.register(features)
-        rule = features.converter_rules["highlight-color-entity"]
-        assert "from_database_format" in rule
-        assert "to_database_format" in rule
-        assert "HIGHLIGHT_COLOR" in rule["to_database_format"]["entity_decorators"]
-
-    def test_text_color_decorator_creates_span(self):
-        el = text_color.text_color_entity_decorator(
+    def test_text_style_decorator_creates_span(self):
+        el = text_style.text_style_entity_decorator(
             {"color": "#ff00ff", "children": "magic"}
         )
         assert el.type == "span"
-        assert el.attr["data-entity-type"] == "TEXT_COLOR"
+        assert el.attr["data-entity-type"] == "TEXT_STYLE"
 
-    def test_highlight_color_handler_parses_background_color(self):
-        handler = highlight_color.HighlightColorEntityHandler("HIGHLIGHT_COLOR")
-        data = handler.get_attribute_data({"style": "background-color: #abc123;"})
-        assert data["backgroundColor"] == "#abc123"
+    def test_text_style_handler_parses_combined_style(self):
+        handler = text_style.TextStyleEntityHandler("TEXT_STYLE")
+        data = handler.get_attribute_data(
+            {"style": "color: #abc123; background-color: #def456; font-size: 18px;"}
+        )
+        assert data["color"] == "#abc123"
+        assert data["backgroundColor"] == "#def456"
+        assert data["size"] == "18px"
+
+
+# ---------------------------------------------------------------------------
+# Styled link handler tests
+# ---------------------------------------------------------------------------
+
+
+class TestStyledLinkElementHandler:
+    """Tests for StyledLinkElementHandler (from_database_format for <a> tags)."""
+
+    def test_handles_external_link_with_style(self):
+        handler = text_style.StyledLinkElementHandler("LINK")
+        data = handler.get_attribute_data(
+            {
+                "href": "https://example.com",
+                "style": "color: #ff0000;",
+                "data-entity-type": "TEXT_STYLE",
+            }
+        )
+        assert data["url"] == "https://example.com"
+        # cssutils normalizes #ff0000 → #f00
+        assert data["color"] in ("#ff0000", "#f00", "red")
+
+    def test_handles_external_link_without_style(self):
+        handler = text_style.StyledLinkElementHandler("LINK")
+        data = handler.get_attribute_data({"href": "https://example.com"})
+        assert data["url"] == "https://example.com"
+
+    def test_handles_missing_page_with_style(self):
+        handler = text_style.StyledLinkElementHandler("LINK")
+        data = handler.get_attribute_data(
+            {
+                "linktype": "page",
+                "id": "99999",
+                "style": "background-color: #00ff00; font-size: 18px;",
+                "data-entity-type": "TEXT_STYLE",
+            }
+        )
+        assert data["id"] == 99999
+        assert data["url"] is None
+        assert data["parentId"] is None
+        # cssutils normalizes #00ff00 → #0f0
+        assert data["backgroundColor"] in ("#00ff00", "#0f0", "lime")
+        assert data["size"] == "18px"
+
+    def test_handles_page_link_without_style(self):
+        """Unstyled page link (no data-entity-type) → only link data."""
+        handler = text_style.StyledLinkElementHandler("LINK")
+        data = handler.get_attribute_data({"linktype": "page", "id": "99999"})
+        assert data["id"] == 99999
+        assert data["url"] is None
+        assert "color" not in data
+
+
+class TestTextStyleDecoratorStyledLinks:
+    """Tests for text_style_entity_decorator with link data."""
+
+    def test_decorator_creates_a_for_styled_page_link(self):
+        el = text_style.text_style_entity_decorator(
+            {"id": 1, "url": "/test/", "color": "#ff0000", "children": "linked"}
+        )
+        assert el.type == "a"
+        assert el.attr.get("data-entity-type") == "TEXT_STYLE"
+        assert el.attr.get("linktype") == "page"
+        assert el.attr.get("id") == "1"
+        assert "color: #ff0000 !important" in el.attr.get("style", "")
+
+    def test_decorator_creates_a_for_external_styled_link(self):
+        el = text_style.text_style_entity_decorator(
+            {
+                "url": "https://example.com",
+                "backgroundColor": "#00ff00",
+                "children": "linked",
+            }
+        )
+        assert el.type == "a"
+        assert el.attr.get("data-entity-type") == "TEXT_STYLE"
+        assert el.attr.get("href") == "https://example.com"
+        assert "background-color: #00ff00 !important" in el.attr.get("style", "")
+
+    def test_decorator_creates_a_without_data_entity_type_for_plain_link(self):
+        """Plain link without style data → <a> without data-entity-type."""
+        el = text_style.text_style_entity_decorator(
+            {"id": 1, "url": "/test/", "children": "linked"}
+        )
+        assert el.type == "a"
+        assert "data-entity-type" not in el.attr
+        assert el.attr.get("linktype") == "page"
+        assert "style" not in el.attr
+
+    def test_decorator_creates_a_without_data_entity_type_for_external_plain_link(self):
+        el = text_style.text_style_entity_decorator(
+            {"url": "https://example.com", "children": "linked"}
+        )
+        assert el.type == "a"
+        assert "data-entity-type" not in el.attr
+        assert el.attr.get("href") == "https://example.com"
+        assert "style" not in el.attr
+
+    def test_decorator_creates_span_when_no_link_data(self):
+        el = text_style.text_style_entity_decorator(
+            {"color": "#ff0000", "children": "text"}
+        )
+        assert el.type == "span"
+        assert el.attr.get("data-entity-type") == "TEXT_STYLE"
+
+    def test_decorator_creates_a_with_all_styles(self):
+        """Styled link with all three style properties."""
+        el = text_style.text_style_entity_decorator(
+            {
+                "id": 1,
+                "url": "/test/",
+                "color": "#ff0000",
+                "backgroundColor": "#00ff00",
+                "size": "18px",
+                "children": "styled",
+            }
+        )
+        assert el.type == "a"
+        assert el.attr.get("data-entity-type") == "TEXT_STYLE"
+        assert el.attr.get("linktype") == "page"
+        assert el.attr.get("id") == "1"
+        style = el.attr.get("style", "")
+        assert "color: #ff0000 !important" in style
+        assert "background-color: #00ff00 !important" in style
+        assert "font-size: 18px !important" in style
+
+    def test_decorator_handles_empty_url_string(self):
+        """Empty url string should render as span, not link."""
+        el = text_style.text_style_entity_decorator(
+            {"color": "#ff0000", "url": "", "children": "text"}
+        )
+        assert el.type == "span"
+        assert "href" not in el.attr
+
+
+class TestStyleLinkRoundTrip:
+    """Verify round-trip: entity → decorator HTML → handler → entity data."""
+
+    def test_styled_external_link_round_trip(self):
+        """External styled link survives decorator → handler round trip."""
+        original = {"url": "/test/", "color": "#ff0000"}
+        el = text_style.text_style_entity_decorator({**original, "children": "text"})
+        assert el.type == "a"
+        handler = text_style.StyledLinkElementHandler("LINK")
+        parsed = handler.get_attribute_data(dict(el.attr))
+        assert parsed["url"] == original["url"]
+        assert parsed["color"] in ("#ff0000", "#f00", "red")
+
+    def test_styled_missing_page_round_trip(self):
+        """Styled page link to a non-existent page survives round trip."""
+        original = {"id": 99999, "url": None, "color": "#ff0000"}
+        el = text_style.text_style_entity_decorator({**original, "children": "text"})
+        assert el.type == "a"
+        handler = text_style.StyledLinkElementHandler("LINK")
+        parsed = handler.get_attribute_data(dict(el.attr))
+        assert parsed["id"] == original["id"]
+        assert parsed["url"] is None
+        assert parsed.get("color") in ("#ff0000", "#f00", "red")
+
+    def test_styled_link_with_all_properties_round_trip(self):
+        """All style props survive decorator → handler for external link."""
+        original = {
+            "url": "https://example.com",
+            "color": "#ff0000",
+            "backgroundColor": "#00ff00",
+            "size": "18px",
+        }
+        el = text_style.text_style_entity_decorator({**original, "children": "text"})
+        handler = text_style.StyledLinkElementHandler("LINK")
+        parsed = handler.get_attribute_data(dict(el.attr))
+        assert parsed["url"] == original["url"]
+        # cssutils normalizes colors
+        assert parsed["color"] in ("#ff0000", "#f00", "red")
+        assert parsed["backgroundColor"] in ("#00ff00", "#0f0", "lime")
+        assert parsed["size"] == "18px"
+
+
+# ---------------------------------------------------------------------------
+# StyledPageLinkHandler tests
+# ---------------------------------------------------------------------------
+
+
+class TestStyledPageLinkHandler:
+    """Tests for StyledPageLinkHandler (front-end rewrite)."""
+
+    def test_expand_with_style(self, page):
+        from draftail_text_utils.rich_text.link import StyledPageLinkHandler
+
+        result = StyledPageLinkHandler.expand_db_attributes(
+            {"id": str(page.id), "style": "color: red;"}
+        )
+        assert "href=" in result
+        assert 'style="color: red;"' in result
+
+    def test_expand_without_style(self, page):
+        from draftail_text_utils.rich_text.link import StyledPageLinkHandler
+
+        result = StyledPageLinkHandler.expand_db_attributes({"id": str(page.id)})
+        assert "href=" in result
+        assert "style" not in result
+
+    def test_expand_bulk_with_style(self, page):
+        from draftail_text_utils.rich_text.link import StyledPageLinkHandler
+
+        results = StyledPageLinkHandler.expand_db_attributes_many(
+            [
+                {"id": str(page.id), "style": "color: red;"},
+                {"id": str(page.id)},
+                {"id": str(page.id), "style": "background-color: blue;"},
+            ]
+        )
+        assert len(results) == 3
+        assert 'style="color: red;"' in results[0]
+        assert "style" not in results[1]
+        assert 'style="background-color: blue;"' in results[2]
+
+    def test_expand_missing_page(self):
+        from draftail_text_utils.rich_text.link import StyledPageLinkHandler
+
+        result = StyledPageLinkHandler.expand_db_attributes(
+            {"id": "99999", "style": "color: red;"}
+        )
+        assert result == '<a style="color: red;">'

@@ -22,8 +22,6 @@ def draftail_text_assets():
             links.add(f'<link rel="stylesheet" href="{url}">')
 
     # Load draftail stylesheets
-    links.add(
-        f'<link rel="stylesheet" href="{_feature_static("css/draftail_text_utils.css")}">'
-    )
+    links.add(f'<link rel="stylesheet" href="{_feature_static("css/page.css")}">')
 
     return mark_safe("\n".join(links.union(preconnect_links)))  # noqa: S308

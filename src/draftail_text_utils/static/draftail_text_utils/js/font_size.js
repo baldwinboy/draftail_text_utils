@@ -12,29 +12,11 @@
 
 (function () {
   var React = window.React;
-  var RichUtils = window.DraftJS.RichUtils;
-  var Modifier = window.DraftJS.Modifier;
-  var EditorState = window.DraftJS.EditorState;
   var ToolbarButton = window.Draftail.ToolbarButton;
+  var dt = window.DraftailTextUtils;
   var data = window.draftailTextUtils || {
     customFontSizes: {
-      PRESETS: [
-        8,
-        9,
-        10,
-        11,
-        12,
-        14,
-        this.state.inputValue || '',
-        18,
-        24,
-        30,
-        36,
-        48,
-        60,
-        72,
-        96,
-      ],
+      PRESETS: [8, 9, 10, 11, 12, 14, 16, 18, 24, 30, 36, 48, 60, 72, 96],
     },
   };
 
@@ -48,85 +30,13 @@
     };
   });
 
-  var optMap = new Map(
-    options.map(function (opt) {
-      return [opt.type, opt];
-    }),
-  );
-
   var FONT_SIZE_STEP = data.customFontSizes.STEP || 1;
   var MIN_FONT_SIZE = data.customFontSizes.MIN || options[0].size;
   var MAX_FONT_SIZE =
     data.customFontSizes.MAX || options[options.length - 1].size;
 
-  var savedSelection = null;
-
-  const entityType = 'FONT_SIZE';
-  const controlType = 'font-size';
-  const control = JSON.parse(
-    document.getElementById(`draftail-plugin-control-${controlType}`)
-      .textContent,
-  );
-
-  function removeFontSizeEntity(editorState) {
-    var selection = editorState.getSelection();
-    if (!selection.getHasFocus()) return editorState;
-
-    var contentWithoutEntity = Modifier.applyEntity(
-      editorState.getCurrentContent(),
-      selection,
-      null, // null removes entity
-    );
-
-    return EditorState.push(editorState, contentWithoutEntity, 'apply-entity');
-  }
-
-  function saveSelection(getEditorState) {
-    const selection = getEditorState().getSelection();
-    if (selection && !selection.isCollapsed()) {
-      savedSelection = selection;
-    }
-  }
-
-  function restoreSelection(editorState) {
-    if (savedSelection && !savedSelection.isCollapsed()) {
-      return EditorState.forceSelection(editorState, savedSelection);
-    }
-    return editorState;
-  }
-
-  // Helper to find active size
-  function getActiveSize(editorState) {
-    var selection = editorState.getSelection();
-    if (!selection.getHasFocus()) return null;
-
-    var contentState = editorState.getCurrentContent();
-    var startKey = selection.getStartKey();
-    var startOffset = selection.getStartOffset();
-    var blockWithEntityAt = contentState.getBlockForKey(startKey);
-
-    // Check entity at cursor position
-    var entityKey = blockWithEntityAt.getEntityAt(startOffset);
-    if (entityKey) {
-      var entity = contentState.getEntity(entityKey);
-      if (entity.getType() === entityType) {
-        return entity.getData().size;
-      }
-    }
-
-    // If selection is collapsed, also check character before (so styling after typing works)
-    if (selection.isCollapsed() && startOffset > 0) {
-      entityKey = blockWithEntityAt.getEntityAt(startOffset - 1);
-      if (entityKey) {
-        var entity = contentState.getEntity(entityKey);
-        if (entity.getType() === entityType) {
-          return entity.getData().size;
-        }
-      }
-    }
-
-    return null;
-  }
+  const entityType = 'TEXT_STYLE';
+  const control = dt.parseControl('font-size');
 
   // The control component
   var FontSizeControl = class FontSizeControl extends React.Component {
@@ -156,7 +66,11 @@
 
     // helpers
     getActiveSize() {
-      return getActiveSize(this.props.getEditorState());
+      return dt.getActiveEntityData(
+        this.props.getEditorState(),
+        entityType,
+        'size',
+      );
     }
 
     syncInputValue() {
@@ -177,43 +91,24 @@
       const willBeOpen =
         typeof force === 'boolean' ? force : !this.state.isDropdownOpen;
       if (willBeOpen && !this.state.isDropdownOpen) {
-        saveSelection(this.props.getEditorState);
+        dt.saveSelection(this.props.getEditorState);
       }
       this.setState({ isDropdownOpen: willBeOpen });
     }
 
     applyFontSize(size) {
-      console.log(size);
-      var editorState = restoreSelection(this.props.getEditorState());
+      var editorState = dt.restoreSelection(this.props.getEditorState());
       var currentSize = this.getActiveSize(editorState);
-      editorState = removeFontSizeEntity(editorState);
 
       if (size === currentSize) {
-        // Re-sync the input value
+        editorState = dt.removeStyleProperty(editorState, entityType, 'size');
         this.props.onChange(editorState);
         this.setState({ isDropdownOpen: false, inputValue: '' });
         this.syncInputValue();
         return;
       }
 
-      var selection = editorState.getSelection();
-
-      // Apply the entity to the selection
-      var contentWithEntity = editorState
-        .getCurrentContent()
-        .createEntity(entityType, 'MUTABLE', {
-          size,
-        });
-      var contentStateWithEntity = Modifier.applyEntity(
-        contentWithEntity,
-        selection,
-        contentWithEntity.getLastCreatedEntityKey(),
-      );
-      var newContent = EditorState.push(
-        editorState,
-        contentStateWithEntity,
-        'apply-entity',
-      );
+      var newContent = dt.mergeStyleEntity(editorState, entityType, { size });
       this.props.onChange(newContent);
 
       // Re-sync the input value
@@ -243,7 +138,7 @@
     };
 
     handleInputFocus = () => {
-      saveSelection(this.props.getEditorState);
+      dt.saveSelection(this.props.getEditorState);
       this.setState({ isInputFocused: true });
       if (!this.state.isDropdownOpen) {
         this.setState({ isDropdownOpen: true });
@@ -291,12 +186,25 @@
     };
 
     handleClickOutside = (event) => {
-      if (
-        this.controlRef.current &&
-        !this.controlRef.current.contains(event.target)
-      ) {
+      if (dt.clickOutsideGuard(this.controlRef, event)) {
         this.setState({ isDropdownOpen: false });
       }
+    };
+
+    createOptElement = (opt) => {
+      return React.createElement(
+        'li',
+        {
+          'key': `FONT_SIZE_OPT_${opt.size}`,
+          'onMouseDown': (e) => {
+            e.preventDefault();
+            this.applyFontSize(opt.size);
+          },
+          'className': 'Draftail--dtu-option Draftail--font-size-option',
+          'aria-selected': this.state.inputValue === opt.size,
+        },
+        opt.label,
+      );
     };
 
     // render
@@ -308,26 +216,10 @@
         'ul',
         {
           'id': 'Draftail--font-size-dropdown',
-          'className': 'Draftail--font-size-dropdown',
+          'className': 'Draftail--dtu-dropdown',
           'aria-expanded': isDropdownExpanded,
         },
-        options.map(
-          function (opt) {
-            return React.createElement(
-              'li',
-              {
-                'key': `FONT_SIZE_OPT_${opt.size}`,
-                'onMouseDown': (e) => {
-                  e.preventDefault();
-                  this.applyFontSize(opt.size);
-                },
-                'className': 'Draftail--font-size-option',
-                'aria-selected': inputDisplay === opt.size,
-              },
-              opt.label,
-            );
-          }.bind(this),
-        ),
+        options.map(this.createOptElement),
       );
 
       var decrementBtn = React.createElement(ToolbarButton, {
@@ -390,7 +282,8 @@
         'div',
         {
           key: 'FONT_SIZE_CTRL',
-          className: 'Draftail--font-size-control',
+          id: 'Draftail--font-size-control',
+          className: 'Draftail--dtu-control',
           ref: this.controlRef,
         },
         controlRow,

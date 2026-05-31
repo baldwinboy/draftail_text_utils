@@ -14,12 +14,10 @@
   var React = window.React;
   var RichUtils = window.DraftJS.RichUtils;
   var ToolbarButton = window.Draftail.ToolbarButton;
+  var dt = window.DraftailTextUtils;
   var data = window.draftailTextUtils || {};
   var options = data.customFontFamilies || [];
-  const type_ = 'font-family';
-  const control = JSON.parse(
-    document.getElementById(`draftail-plugin-control-${type_}`).textContent,
-  );
+  const control = dt.parseControl('font-family');
 
   // ── Helper to find active font family ──
   function getActiveOption(editorState) {
@@ -46,10 +44,7 @@
 
     // ── close dropdown when clicking outside ──
     handleClickOutside = (event) => {
-      if (
-        this.controlRef.current &&
-        !this.controlRef.current.contains(event.target)
-      ) {
+      if (dt.clickOutsideGuard(this.controlRef, event)) {
         this.setState({ isOpen: false });
       }
     };
@@ -69,7 +64,7 @@
 
       // Remove any active font-family styles first
       options.forEach((item) => {
-        if (currentStyle.has(item.type)) {
+        if (currentStyle.has(item.type) && item.type !== opt.type) {
           newState = RichUtils.toggleInlineStyle(newState, item.type);
         }
       });
@@ -80,6 +75,26 @@
 
       // Close the dropdown
       this.setState({ isOpen: false });
+    };
+
+    createOptElement = (opt) => {
+      return React.createElement(
+        'li',
+        {
+          'key': opt.type,
+          'onMouseDown': (e) => {
+            // Prevent the blur on the button before the click is processed
+            e.preventDefault();
+            this.handleOptionClick(opt);
+          },
+          'className': 'Draftail--dtu-option Draftail--font-family-option',
+          'style': opt.style,
+          'aria-selected': getActiveOption(this.props.getEditorState())
+            ? getActiveOption(this.props.getEditorState()).type === opt.type
+            : false,
+        },
+        opt.label,
+      );
     };
 
     render() {
@@ -93,28 +108,11 @@
       const dropdown = React.createElement(
         'ul',
         {
-          'className': 'Draftail--font-family-dropdown',
+          'id': 'Draftail--font-family-dropdown',
+          'className': 'Draftail--dtu-dropdown',
           'aria-expanded': isOpen,
         },
-        options.map((opt) =>
-          React.createElement(
-            'li',
-            {
-              'key': opt.type,
-              'onMouseDown': (e) => {
-                // Prevent the blur on the button before the click is processed
-                e.preventDefault();
-                this.handleOptionClick(opt);
-              },
-              'style': { fontFamily: opt.style.fontFamily },
-              'className': 'Draftail--font-family-option',
-              'aria-selected': activeOption
-                ? activeOption.type === opt.type
-                : false,
-            },
-            opt.label,
-          ),
-        ),
+        options.map(this.createOptElement),
       );
 
       // ── Toolbar button ──
@@ -130,7 +128,8 @@
       return React.createElement(
         'div',
         {
-          className: 'Draftail--font-family-control',
+          id: 'Draftail--font-family-control',
+          className: 'Draftail--dtu-control',
           ref: this.controlRef,
         },
         dropdown,
