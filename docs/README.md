@@ -79,7 +79,7 @@ src/draftail_text_utils/
 
 | Feature name | Type | JS plugin | CSS file | Description |
 |---|---|---|---|---|
-| `text-style-entity` | Entity | `text_style_entity.js` + `styled_link_source.js` + `common.js` | - | Unified entity for text colour, highlight, font size, AND styled links |
+| `text-style-entity` | Entity | `text_style_entity.js` + `styled_link_source.js` + `common.js` | - | Unified entity for text colour, highlight, font size, AND styled links with tooltip (Edit/Remove) |
 | `text-color` | Control (TEXT_STYLE entity) | `text_color.js` + `common.js` | `text_color.css` | Apply/remove text colour |
 | `highlight-color` | Control (TEXT_STYLE entity) | `highlight_color.js` + `common.js` | `highlight_color.css` | Apply/remove highlight colour |
 | `font-family` | InlineStyle + Control | `font_family.js` | `font_family.css` | Font family dropdown |

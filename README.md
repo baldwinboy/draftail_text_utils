@@ -1,6 +1,7 @@
 # Draftail Text Utils
 
 Extends Draftail's text customization. Includes:
+- Styled Links (preserve colour, highlight, and size in links, with tooltip Edit/Remove)
 - Text Color (with optional palettes)
 - Highlight Color
 - Font Family

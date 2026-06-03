@@ -204,6 +204,26 @@ class TestTextStyleRegistration:
         assert "background-color: #00ff00 !important" in style
         assert "font-size: 18px !important" in style
 
+    def test_entity_decorator_converts_numeric_size_to_px(self):
+        """Numeric size values should be converted to px strings."""
+        el = text_style.text_style_entity_decorator({"size": 18, "children": "text"})
+        style = el.attr.get("style", "")
+        assert "font-size: 18px !important" in style
+
+    def test_entity_decorator_converts_numeric_size_to_px_in_link(self):
+        """Numeric size values should be converted to px in link entities."""
+        el = text_style.text_style_entity_decorator(
+            {
+                "id": 1,
+                "url": "/test/",
+                "size": 24,
+                "children": "linked",
+            }
+        )
+        assert el.type == "a"
+        style = el.attr.get("style", "")
+        assert "font-size: 24px !important" in style
+
     def test_entity_decorator_handles_no_properties(self):
         el = text_style.text_style_entity_decorator({"children": "text"})
         assert el.type == "span"

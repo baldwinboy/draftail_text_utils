@@ -39,6 +39,84 @@
   }
 
   class StyledLinkSource extends LinkModalWorkflowSource {
+    componentDidMount() {
+      if (window.__draftailUnlink) {
+        window.__draftailUnlink = false;
+        this.removeLinkOnly();
+        return;
+      }
+      if (super.componentDidMount) {
+        super.componentDidMount();
+      }
+    }
+
+    removeLinkOnly() {
+      var Modifier = window.DraftJS.Modifier;
+      var EditorState = window.DraftJS.EditorState;
+      var props = this.props;
+      var editorState = props.editorState;
+      var entity = props.entity;
+      var onComplete = props.onComplete;
+
+      var mergedData = {};
+      if (entity) {
+        var existingData = entity.getData();
+        for (var k in existingData) {
+          if (existingData.hasOwnProperty(k)) mergedData[k] = existingData[k];
+        }
+      }
+      mergedData.url = '';
+      delete mergedData.id;
+      delete mergedData.parentId;
+
+      var contentState = editorState.getCurrentContent();
+      var selection = editorState.getSelection();
+      var newContent = contentState.createEntity(
+        ENTITY_TYPE,
+        'MUTABLE',
+        mergedData,
+      );
+      var newEntityKey = newContent.getLastCreatedEntityKey();
+
+      var entityKey = props.entityKey;
+      var startKey = selection.getStartKey();
+      var startOffset = selection.getStartOffset();
+      var block = newContent.getBlockForKey(startKey);
+
+      if (block) {
+        var rangeStart = startOffset;
+        var rangeEnd = startOffset + 1;
+        while (
+          rangeStart > 0 &&
+          block.getEntityAt(rangeStart - 1) === entityKey
+        ) {
+          rangeStart--;
+        }
+        while (
+          rangeEnd < block.getLength() &&
+          block.getEntityAt(rangeEnd) === entityKey
+        ) {
+          rangeEnd++;
+        }
+        var rangeSelection = selection.merge({
+          anchorKey: startKey,
+          anchorOffset: rangeStart,
+          focusKey: startKey,
+          focusOffset: rangeEnd,
+        });
+        newContent = Modifier.applyEntity(
+          newContent,
+          rangeSelection,
+          newEntityKey,
+        );
+      } else {
+        newContent = Modifier.applyEntity(newContent, selection, newEntityKey);
+      }
+
+      var newState = EditorState.push(editorState, newContent, 'apply-entity');
+      onComplete(newState);
+    }
+
     onChosen(chosenData) {
       var Modifier = window.DraftJS.Modifier;
       var EditorState = window.DraftJS.EditorState;

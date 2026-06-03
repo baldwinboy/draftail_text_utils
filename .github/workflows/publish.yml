@@ -24,6 +24,8 @@ jobs:
     needs: [release-please]
     if: ${{ needs.release-please.outputs.release_created }}
     uses: ./.github/workflows/test.yml
+    permissions:
+      contents: read
 
   build:
     needs: [release-please, test]

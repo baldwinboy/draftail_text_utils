@@ -4,12 +4,13 @@
   var React = window.React;
   var ENTITY_TYPE = 'TEXT_STYLE';
   var STYLE_KEY = 'style';
-  var DATASET_KEY = 'data-entity-type';
 
   var TextStyleDecorator = function (_ref) {
     var children = _ref.children;
     var contentState = _ref.contentState;
     var entityKey = _ref.entityKey;
+    var onEdit = _ref.onEdit;
+    var onRemove = _ref.onRemove;
     var entity;
 
     try {
@@ -48,14 +49,62 @@
     var hasLink = linkUrl || linkId !== undefined;
 
     if (hasLink) {
-      var attrs = {
-        href: linkUrl || '#',
-        ref: setStyleRef,
-        [STYLE_KEY]: style,
-        [DATASET_KEY]: ENTITY_TYPE,
-        className: 'StyledLink',
-      };
-      return React.createElement('a', attrs, children);
+      var TooltipEntity = window.draftail.TooltipEntity;
+      var showTooltip = TooltipEntity && (onEdit || onRemove);
+
+      if (showTooltip) {
+        var tooltipLabel = linkUrl || 'Broken link';
+
+        var linkIcon = null;
+        if (window.draftail.Icon) {
+          linkIcon = React.createElement(window.draftail.Icon, {
+            name: 'link',
+          });
+        }
+
+        var styledChildren = React.createElement(
+          'span',
+          {
+            ref: setStyleRef,
+            [STYLE_KEY]: style,
+          },
+          children,
+        );
+
+        var handleRemove = function () {
+          var hasStyles = data.color || data.backgroundColor || data.size;
+          if (hasStyles) {
+            window.__draftailUnlink = true;
+            if (onEdit) onEdit(entityKey);
+          } else if (onRemove) {
+            onRemove(entityKey);
+          }
+        };
+
+        return React.createElement(
+          TooltipEntity,
+          {
+            entityKey: entityKey,
+            onEdit: onEdit,
+            onRemove: handleRemove,
+            icon: linkIcon,
+            label: tooltipLabel,
+            url: linkUrl || '#',
+          },
+          styledChildren,
+        );
+      }
+
+      return React.createElement(
+        'a',
+        {
+          href: linkUrl || '#',
+          ref: setStyleRef,
+          [STYLE_KEY]: style,
+          className: 'StyledLink',
+        },
+        children,
+      );
     }
 
     return React.createElement(
@@ -63,7 +112,6 @@
       {
         ref: setStyleRef,
         [STYLE_KEY]: style,
-        [DATASET_KEY]: ENTITY_TYPE,
       },
       children,
     );
@@ -78,7 +126,7 @@
   window.draftail.registerPlugin(
     {
       type: ENTITY_TYPE,
-      source: TextStyleSource,
+      source: window.draftail.StyledLinkSource || TextStyleSource,
       decorator: TextStyleDecorator,
     },
     'entityTypes',
@@ -86,7 +134,6 @@
 
   // Also provide a decorator for pre-existing LINK entities so they render
   // correctly in the editor even when no TEXT_STYLE entity is involved.
-  // The source is preserved from styled_link_source.js's registration.
   window.draftail.registerPlugin(
     {
       type: 'LINK',
