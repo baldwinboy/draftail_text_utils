@@ -10,11 +10,11 @@ Extends Draftail's text customization. Includes:
 
 ## Links
 
-- [Documentation](https://github.com/baldwinboy/draftail-text-utils/blob/main/README.md)
-- [Changelog](https://github.com/baldwinboy/draftail-text-utils/blob/main/CHANGELOG.md)
-- [Contributing](https://github.com/baldwinboy/draftail-text-utils/blob/main/CONTRIBUTING.md)
-- [Discussions](https://github.com/baldwinboy/draftail-text-utils/discussions)
-- [Security](https://github.com/baldwinboy/draftail-text-utils/security)
+- [Documentation](https://github.com/baldwinboy/draftail_text_utils/blob/main/docs/README.md)
+- [Changelog](https://github.com/baldwinboy/draftail_text_utils/blob/main/CHANGELOG.md)
+- [Contributing](https://github.com/baldwinboy/draftail_text_utils/blob/main/CONTRIBUTING.md)
+- [Discussions](https://github.com/baldwinboy/draftail_text_utils/discussions)
+- [Security](https://github.com/baldwinboy/draftail_text_utils/security)
 
 ## Supported versions
 

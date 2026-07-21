@@ -9,8 +9,8 @@ The repo includes a simple demo application that can be run to develop the packa
 First, clone the repo:
 
 ```sh
-git clone git+https://github.com/baldwinboy/draftail-text-utils
-cd draftail-text-utils
+git clone git+https://github.com/baldwinboy/draftail_text_utils
+cd draftail_text_utils
 ```
 
 We use [just](https://github.com/casey/just) as a task runner, [prek](https://github.com/j178/prek) for pre-commit hooks, and [uv](https://docs.astral.sh/uv/) to manage Python dependencies. Make sure you have all three installed.
