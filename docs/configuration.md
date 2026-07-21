@@ -16,8 +16,9 @@ DRAFTAIL_TEXT_UTILS = {
     # Option A: point to any module that exposes colour data
     "COLORS": {
         "MODULE": None,  # e.g. "apps.core.models"
+        "CALLABLE": None,  # e.g. "myapp.utils.get_colors"
     },
-    # Option B: provide an explicit palette list (ignored if MODULE is set)
+    # Option B: provide an explicit palette list (ignored if MODULE/CALLABLE is set)
     "COLOR_PALETTE": None,  # falls back to the built-in 13-colour palette
 
     # ---- Font families ----
@@ -88,7 +89,55 @@ DRAFTAIL_TEXT_UTILS = {
 }
 ```
 
-### Option B — explicit palette
+### Option B — callable
+
+Point to a callable that returns a colour palette list.  This is useful
+when colours are stored in a database model or another dynamic source
+that doesn't fit the module-attribute pattern.
+
+```python
+DRAFTAIL_TEXT_UTILS = {
+    "COLORS": {
+        "CALLABLE": "myapp.utils.get_color_palette",
+    },
+}
+```
+
+The callable must be a dotted path to a function that accepts no
+arguments and returns a list of `{"key": ..., "label": ..., "value": ...}`
+dicts, or `None` to fall through to the next source.  Hex colour values
+may be 7 characters (`#rrggbb`) or 9 characters (`#rrggbbaa`) to include
+opacity.
+
+If the callable returns `None`, the loader falls through to `COLORS.MODULE`
+(if set), then `COLOR_PALETTE`, then the built-in defaults.
+
+```python
+# myapp/utils.py
+def get_color_palette():
+    from wagtail_daisIE.models import DaisyUITheme
+
+    theme = DaisyUITheme.objects.filter(default=True).first()
+    if not theme:
+        return None
+    colors = theme.colors.first()
+    if not colors:
+        return None
+
+    return [
+        {"key": "primary", "label": "Primary", "value": colors.primary},
+        {"key": "secondary", "label": "Secondary", "value": colors.secondary},
+        {"key": "accent", "label": "Accent", "value": colors.accent},
+        {"key": "neutral", "label": "Neutral", "value": colors.neutral},
+        {"key": "base", "label": "Base", "value": colors.base_100},
+        {"key": "info", "label": "Info", "value": colors.info},
+        {"key": "success", "label": "Success", "value": colors.success},
+        {"key": "warning", "label": "Warning", "value": colors.warning},
+        {"key": "error", "label": "Error", "value": colors.error},
+    ]
+```
+
+### Option C — explicit palette
 
 Pass a list of colour dicts directly:
 
@@ -102,12 +151,12 @@ DRAFTAIL_TEXT_UTILS = {
 }
 ```
 
-### Option C — nothing (built-in defaults)
+### Option D — nothing (built-in defaults)
 
-When neither `COLORS.MODULE` nor `COLOR_PALETTE` is set, the package uses
-a built-in palette of 13 common colours including `transparent`, `black`,
-`white`, `gray`, `red`, `orange`, `yellow`, `green`, `teal`, `blue`,
-`indigo`, `purple`, and `pink`.
+When neither `COLORS.MODULE`, `COLORS.CALLABLE`, nor `COLOR_PALETTE` is
+set, the package uses a built-in palette of 13 common colours including
+`transparent`, `black`, `white`, `gray`, `red`, `orange`, `yellow`,
+`green`, `teal`, `blue`, `indigo`, `purple`, and `pink`.
 
 ---
 

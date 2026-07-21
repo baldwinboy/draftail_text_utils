@@ -15,8 +15,9 @@ Usage in your Django settings:
         # Option A: point to an existing module with a DRAFTAIL_COLORS list
         "COLORS": {
             "MODULE": None,  # e.g. "apps.core.models"
+            "CALLABLE": None,  # e.g. "myapp.utils.get_colors"
         },
-        # Option B: provide an explicit palette (ignored if MODULE is set)
+        # Option B: provide an explicit palette (ignored if MODULE/CALLABLE is set)
         "COLOR_PALETTE": None,  # falls back to built-in defaults
         # ---- Font families ----
         # Option A: point to an existing module with a DRAFTAIL_FONT_FAMILIES list
@@ -208,6 +209,24 @@ def _normalise_font_urls(font_urls):
 
 def load_color_palette():
     colors_config = get_setting("COLORS", {})
+
+    callable_path = colors_config.get("CALLABLE")
+    if callable_path:
+        try:
+            module_path, func_name = callable_path.rsplit(".", 1)
+            module = importlib.import_module(module_path)
+            func = getattr(module, func_name)
+            if callable(func):
+                result = func()
+                if result is not None:
+                    return result
+        except (ImportError, ValueError, AttributeError) as e:
+            logger.warning(
+                "Failed to load colours from callable %s: %s",
+                callable_path,
+                e,
+            )
+
     module_path = colors_config.get("MODULE")
 
     if module_path:
