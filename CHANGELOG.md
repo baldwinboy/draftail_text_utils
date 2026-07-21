@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/baldwinboy/draftail_text_utils/compare/v0.1.7...v0.2.0) (2026-06-03)
+
+
+### Features
+
+* merge link styles with extension ([69dbe54](https://github.com/baldwinboy/draftail_text_utils/commit/69dbe54b5fc68b6111bbcb99243a5bf160ec5c55))
+
+
+### Bug Fixes
+
+* bump Wagtail dependency to &gt;=7.3.2 to resolve security advisory ([2fdc127](https://github.com/baldwinboy/draftail_text_utils/commit/2fdc127885cd5efaa59e0692f0a6afd164d1b521))
+
+## [Unreleased]
+
+### Added
+
+- Link entity tooltip with Edit/Remove buttons for styled links
+- LINK entity decorator registration — pre-existing link entities now render correctly
+- Python decorator now handles numeric font-size values by appending `px`
+
+### Fixed
+
+- Font size not applying to link entities — numeric size values now get `px` unit
+- Remove link now preserves style data (colour, highlight, size) instead of stripping the entire entity
+- Remove link condition in source now matches `null` values from Wagtail's link chooser
+
 ## [0.1.7](https://github.com/baldwinboy/draftail_text_utils/compare/v0.1.6...v0.1.7) (2026-05-24)
 
 

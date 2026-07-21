@@ -1,0 +1,52 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable declaration-property-value-allowed-list */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable scale-unlimited/declaration-strict-value */
+/* stylelint-disable property-disallowed-list */
+/* stylelint-disable color-named */
+.Draftail--dtu-color-input-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Draftail--dtu-color-input-wrapper input[type='color'] {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  inline-size: 2rem;
+  block-size: 1.5rem;
+  background: none;
+}
+
+.Draftail--dtu-color-option-wrapper {
+  flex: 0 0 calc(25% - 12px);
+}
+
+.Draftail--dtu-color-option {
+  position: relative;
+  background: attr(name type(<color>), black) !important;
+  border: 0.3125rem solid var(--w-color-surface-menu-hover, #e8e8e8);
+}
+
+.Draftail--dtu-color-option:hover,
+.Draftail--dtu-color-option.Draftail-ToolbarButton--active {
+  border: 0.3125rem solid var(--w-color-text-button-outline-default, #007d7e) !important;
+}
+
+.Draftail--dtu-color-hr {
+  width: 100%;
+}
+
+.Draftail--dtu-color-option > .Draftail-ToolbarButton__label {
+  display: none;
+}
+
+.Draftail--dtu-color-option.Draftail-ToolbarButton--active
+  > .Draftail-ToolbarButton__label {
+  display: inline-block;
+  position: relative;
+  text-align: center;
+  top: -2px;
+  color: var(--w-color-text-button-outline-default, #007d7e);
+}

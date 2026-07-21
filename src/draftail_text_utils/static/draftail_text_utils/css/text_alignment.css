@@ -3,49 +3,8 @@
 /* stylelint-disable declaration-no-important */
 /* stylelint-disable scale-unlimited/declaration-strict-value */
 /* stylelint-disable property-disallowed-list */
-.Draftail--text-alignment-control {
-  cursor: default !important;
-  position: relative;
-  display: inline-block;
-  margin-inline-end: 0.625rem;
-  background: none !important;
-  border-width: 0 !important;
-  outline-width: 0 !important;
-}
-
-.Draftail--text-alignment-dropdown {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 100;
-  min-width: 180px;
-  max-height: 260px;
-  overflow: hidden;
-  margin: 0;
-  padding: 4px 0;
-  list-style: none;
-  background: var(--w-color-surface-page, #fff);
-  border: 1px solid var(--w-color-border-furniture, #ddd);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.Draftail--text-alignment-dropdown[aria-expanded='true'] {
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  overflow: inherit;
-}
-
 .Draftail--text-alignment-option {
   z-index: 10;
-}
-
-.Draftail--text-alignment-icon {
-  font-family: serif;
-  font-size: 14px;
-  font-weight: 700;
 }
 
 .Draftail-block--ALIGNMENT_LEFT {

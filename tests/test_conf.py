@@ -509,3 +509,250 @@ class TestColorPaletteModuleLoading:
                 {"key": "primary", "label": "Primary", "value": "#7C3AED"},
                 {"key": "secondary", "label": "Secondary", "value": "#EC4899"},
             ]
+
+
+# ---------------------------------------------------------------------------
+# Color palette callable loading
+# ---------------------------------------------------------------------------
+
+
+class TestColorPaletteCallableLoading:
+    def test_callable_returns_palette(self):
+        fake_module = types.ModuleType("fake_module")
+
+        def get_colors():
+            return [
+                {"key": "primary", "label": "Primary", "value": "#7C3AED"},
+                {"key": "secondary", "label": "Secondary", "value": "#EC4899"},
+            ]
+
+        fake_module.get_colors = get_colors
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=_fake_import(fake_module),
+            ),
+            override_settings(
+                DRAFTAIL_TEXT_UTILS={
+                    "COLORS": {"CALLABLE": "fake.path.get_colors"},
+                }
+            ),
+        ):
+            result = load_color_palette()
+            assert result == [
+                {"key": "primary", "label": "Primary", "value": "#7C3AED"},
+                {"key": "secondary", "label": "Secondary", "value": "#EC4899"},
+            ]
+
+    def test_callable_with_hex_opacity(self):
+        fake_module = types.ModuleType("fake_module")
+
+        def get_colors():
+            return [
+                {"key": "primary", "label": "Primary", "value": "#7C3AEDff"},
+                {"key": "secondary", "label": "Secondary", "value": "#EC489980"},
+            ]
+
+        fake_module.get_colors = get_colors
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=_fake_import(fake_module),
+            ),
+            override_settings(
+                DRAFTAIL_TEXT_UTILS={
+                    "COLORS": {"CALLABLE": "fake.path.get_colors"},
+                }
+            ),
+        ):
+            result = load_color_palette()
+            assert result == [
+                {"key": "primary", "label": "Primary", "value": "#7C3AEDff"},
+                {"key": "secondary", "label": "Secondary", "value": "#EC489980"},
+            ]
+
+    def test_callable_returns_none_falls_through_to_module(self):
+        fake_module = types.ModuleType("fake_module")
+        fake_module.DRAFTAIL_COLORS = [
+            {"key": "fallback", "label": "Fallback", "value": "#000000"},
+        ]
+
+        def get_colors():
+            return None
+
+        fake_module.get_colors = get_colors
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=_fake_import(fake_module),
+            ),
+            override_settings(
+                DRAFTAIL_TEXT_UTILS={
+                    "COLORS": {
+                        "CALLABLE": "fake.path.get_colors",
+                        "MODULE": "fake.path",
+                    },
+                }
+            ),
+        ):
+            result = load_color_palette()
+            assert result == [
+                {"key": "fallback", "label": "Fallback", "value": "#000000"},
+            ]
+
+    def test_callable_returns_empty_list(self):
+        fake_module = types.ModuleType("fake_module")
+
+        def get_colors():
+            return []
+
+        fake_module.get_colors = get_colors
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=_fake_import(fake_module),
+            ),
+            override_settings(
+                DRAFTAIL_TEXT_UTILS={
+                    "COLORS": {"CALLABLE": "fake.path.get_colors"},
+                }
+            ),
+        ):
+            result = load_color_palette()
+            assert result == []
+
+    def test_callable_import_error_falls_through(self):
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=ImportError("no module"),
+            ),
+            override_settings(
+                DRAFTAIL_TEXT_UTILS={
+                    "COLORS": {"CALLABLE": "nonexistent.func"},
+                }
+            ),
+        ):
+            result = load_color_palette()
+            assert result == DEFAULT_COLORS
+
+    def test_callable_attribute_error_falls_through(self):
+        fake_module = types.ModuleType("fake_module")
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=_fake_import(fake_module),
+            ),
+            override_settings(
+                DRAFTAIL_TEXT_UTILS={
+                    "COLORS": {"CALLABLE": "fake.path.nonexistent_func"},
+                }
+            ),
+        ):
+            result = load_color_palette()
+            assert result == DEFAULT_COLORS
+
+    def test_callable_invalid_path_falls_through(self):
+        with override_settings(
+            DRAFTAIL_TEXT_UTILS={
+                "COLORS": {"CALLABLE": "no-dot-separator"},
+            }
+        ):
+            result = load_color_palette()
+            assert result == DEFAULT_COLORS
+
+    def test_callable_none_falls_through_to_module(self):
+        fake_module = types.ModuleType("fake_module")
+        fake_module.DRAFTAIL_COLORS = [
+            {"key": "from_module", "label": "From Module", "value": "#ABCDEF"},
+        ]
+
+        fake_module.get_colors = None
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=_fake_import(fake_module),
+            ),
+            override_settings(
+                DRAFTAIL_TEXT_UTILS={
+                    "COLORS": {
+                        "CALLABLE": "fake.path.get_colors",
+                        "MODULE": "fake.path",
+                    },
+                }
+            ),
+        ):
+            result = load_color_palette()
+            assert result == [
+                {"key": "from_module", "label": "From Module", "value": "#ABCDEF"},
+            ]
+
+    def test_callable_with_short_hex(self):
+        fake_module = types.ModuleType("fake_module")
+
+        def get_colors():
+            return [
+                {"key": "red", "label": "Red", "value": "#FF0000"},
+                {"key": "green", "label": "Green", "value": "#00FF00"},
+                {"key": "blue", "label": "Blue", "value": "#0000FF"},
+            ]
+
+        fake_module.get_colors = get_colors
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=_fake_import(fake_module),
+            ),
+            override_settings(
+                DRAFTAIL_TEXT_UTILS={
+                    "COLORS": {"CALLABLE": "fake.path.get_colors"},
+                }
+            ),
+        ):
+            result = load_color_palette()
+            assert len(result) == 3
+            assert all(len(c["value"]) == 7 for c in result)
+
+    def test_callable_preserves_nine_char_hex(self):
+        fake_module = types.ModuleType("fake_module")
+
+        def get_colors():
+            return [
+                {"key": "primary", "label": "Primary", "value": "#422AD5ff"},
+                {"key": "secondary", "label": "Secondary", "value": "#F4309880"},
+                {"key": "accent", "label": "Accent", "value": "#00D3BBcc"},
+            ]
+
+        fake_module.get_colors = get_colors
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=_fake_import(fake_module),
+            ),
+            override_settings(
+                DRAFTAIL_TEXT_UTILS={
+                    "COLORS": {"CALLABLE": "fake.path.get_colors"},
+                }
+            ),
+        ):
+            result = load_color_palette()
+            assert len(result) == 3
+            assert result[0]["value"] == "#422AD5ff"
+            assert result[1]["value"] == "#F4309880"
+            assert result[2]["value"] == "#00D3BBcc"
+
+    def test_callable_not_called_when_not_set(self):
+        """Verify the callable is never invoked when CALLABLE is not configured."""
+        fake_module = types.ModuleType("fake_module")
+
+        spy = MagicMock(return_value=[])
+        fake_module.get_colors = spy
+        with (
+            patch(
+                "importlib.import_module",
+                side_effect=_fake_import(fake_module),
+            ),
+            override_settings(DRAFTAIL_TEXT_UTILS={}),
+        ):
+            load_color_palette()
+            spy.assert_not_called()

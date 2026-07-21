@@ -2,6 +2,7 @@
 
 Extends Wagtail's Draftail rich text editor with:
 
+- **Styled links** — links that preserve text colour, highlight, and font size on save.
 - **Text colour** — apply predefined or custom colours to selected text.
 - **Highlight colour** — apply background / highlight colours.
 - **Font family** — apply a custom font family to selected text.
@@ -44,7 +45,8 @@ body = RichTextField()
 # Or with selective features:
 body = RichTextField(features=[
     "bold", "italic",
-    "text-color", "custom-text-color",
+    "styled-link",
+    "text-color",
     "font-family", "font-size",
 ])
 ```
@@ -77,10 +79,9 @@ src/draftail_text_utils/
 
 | Feature name | Type | JS plugin | CSS file | Description |
 |---|---|---|---|---|
-| `text-color` | InlineStyle + Control | `text_color.js` | `text_color.css` | Predefined text colours |
-| `custom-text-color` | Entity | `custom_text_color.js` | - | Arbitrary colour from picker |
-| `highlight-color` | InlineStyle + Control | `highlight_color.js` | `highlight_color.css` | Predefined highlight colours |
-| `custom-highlight-color` | Entity | `custom_highlight_color.js` | - | Arbitrary highlight colour |
+| `text-style-entity` | Entity | `text_style_entity.js` + `styled_link_source.js` + `common.js` | - | Unified entity for text colour, highlight, font size, AND styled links with tooltip (Edit/Remove) |
+| `text-color` | Control (TEXT_STYLE entity) | `text_color.js` + `common.js` | `text_color.css` | Apply/remove text colour |
+| `highlight-color` | Control (TEXT_STYLE entity) | `highlight_color.js` + `common.js` | `highlight_color.css` | Apply/remove highlight colour |
 | `font-family` | InlineStyle + Control | `font_family.js` | `font_family.css` | Font family dropdown |
 | `font-size` | InlineStyle + Control | `font_size.js` | `font_size.css` | Size input + presets |
 | `text-alignment` | InlineStyle + Control | `text_alignment.js` | `text_alignment.css` | Alignment button group |

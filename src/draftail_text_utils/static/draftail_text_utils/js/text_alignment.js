@@ -14,11 +14,9 @@
   var React = window.React;
   var RichUtils = window.DraftJS.RichUtils;
   var ToolbarButton = window.Draftail.ToolbarButton;
+  var dt = window.DraftailTextUtils;
   var data = window.draftailTextUtils || {};
-  const type_ = 'text-alignment';
-  const control = JSON.parse(
-    document.getElementById(`draftail-plugin-control-${type_}`).textContent,
-  );
+  const control = dt.parseControl('text-alignment');
   const options = control.data || [];
 
   // ── Helper to find active text alignment ──
@@ -27,6 +25,7 @@
     const block = editorState
       .getCurrentContent()
       .getBlockForKey(selection.getStartKey());
+    if (!block) return null;
     const blockType = block.getType();
     return options.find((opt) => opt.type === blockType) || null;
   }
@@ -50,10 +49,7 @@
 
     // ── close dropdown when clicking outside ──
     handleClickOutside = (event) => {
-      if (
-        this.controlRef.current &&
-        !this.controlRef.current.contains(event.target)
-      ) {
+      if (dt.clickOutsideGuard(this.controlRef, event)) {
         this.setState({ isOpen: false });
       }
     };
@@ -85,7 +81,8 @@
       const dropdown = React.createElement(
         'ul',
         {
-          'className': 'Draftail--text-alignment-dropdown',
+          'id': 'Draftail--text-alignment-dropdown',
+          'className': 'Draftail--dtu-dropdown Draftail--dtu-dropdown-row',
           'aria-expanded': isOpen,
         },
         options.map((opt) =>
@@ -120,7 +117,8 @@
       return React.createElement(
         'div',
         {
-          className: 'Draftail--text-alignment-control',
+          id: 'Draftail--text-alignment-control',
+          className: 'Draftail--dtu-control',
           ref: this.controlRef,
         },
         dropdown,
