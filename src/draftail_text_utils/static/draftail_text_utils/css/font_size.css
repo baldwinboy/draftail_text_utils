@@ -26,26 +26,24 @@
   margin-top: -0.25rem;
 }
 
-.Draftail--font-size-input-wrapper {
+.Draftail--font-size-input-wrapper,
+input.Draftail--font-size-input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 input.Draftail--font-size-input {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   min-height: 0;
   height: 1.875rem;
-  font-size: 1rem;
   min-width: 5rem;
   padding-inline: 0.25rem;
+  font-size: 1rem;
 }
 
 input.Draftail--font-size-input::placeholder {
+  position: relative;
+  top: -0.09375rem;
   font-size: 0.75rem;
   text-align: center;
-  top: -0.09375rem;
-  position: relative;
 }

@@ -369,7 +369,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "cssutils", specifier = ">=2.15.0" },
-    { name = "django", specifier = ">=5.0" },
+    { name = "django", specifier = ">=5.1" },
     { name = "wagtail", specifier = ">=7.3.2" },
     { name = "wagtail-traverse", specifier = ">=1.0.1" },
 ]
