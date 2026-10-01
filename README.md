@@ -28,4 +28,5 @@ Pick the command for your preferred package installer:
 uv add draftail-text-utils
 poetry add draftail-text-utils
 pip install draftail-text-utils
+# uvx pip install draftail-text-utils
 ```
