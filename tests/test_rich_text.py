@@ -21,10 +21,7 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(autouse=True)
 def configure_dom():
     """Ensure draftjs_exporter DOM is configured for decorator tests."""
-    from draftjs_exporter.engines.string import DOMString
-
-    if DOM.dom is None:
-        DOM.dom = DOMString
+    DOM.use(DOM.STRING)
     yield
 
 

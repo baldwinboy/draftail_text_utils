@@ -11,7 +11,6 @@ DRAFTAIL_TEXT_UTILS = {
         "STEP": 1,  # Granularity / step between consecutive sizes
         "PRESETS": [8, 9, 10, 11, 12, 14, 16, 18, 24, 30, 36, 48, 60, 72, 96],
     },
-
     # ---- Colour palette ----
     # Option A: point to any module that exposes colour data
     "COLORS": {
@@ -20,11 +19,9 @@ DRAFTAIL_TEXT_UTILS = {
     },
     # Option B: provide an explicit palette list (ignored if MODULE/CALLABLE is set)
     "COLOR_PALETTE": None,  # falls back to the built-in 13-colour palette
-
     # ---- Font families ----
     "FONT_FAMILIES": None,  # list of {"label": str, "value": str}
-    "FONT_URLS": None, # list of str
-
+    "FONT_URLS": None,  # list of str
     # ---- Feature toggles ----
     "FEATURES": {
         "TEXT_COLOR": True,
@@ -54,7 +51,26 @@ DRAFTAIL_TEXT_UTILS = {
         "MIN": 1,
         "MAX": 200,
         "STEP": 1,
-        "PRESETS": [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48, 60, 72, 96, 120, 144],
+        "PRESETS": [
+            8,
+            10,
+            12,
+            14,
+            16,
+            18,
+            20,
+            24,
+            28,
+            32,
+            36,
+            42,
+            48,
+            60,
+            72,
+            96,
+            120,
+            144,
+        ],
     },
 }
 ```
@@ -271,10 +287,10 @@ Each feature can be enabled or disabled independently:
 DRAFTAIL_TEXT_UTILS = {
     "FEATURES": {
         "TEXT_COLOR": True,
-        "HIGHLIGHT_COLOR": False,   # disable highlight
+        "HIGHLIGHT_COLOR": False,  # disable highlight
         "FONT_FAMILY": True,
         "FONT_SIZE": True,
-        "TEXT_ALIGNMENT": False,    # disable alignment
+        "TEXT_ALIGNMENT": False,  # disable alignment
     },
 }
 ```
@@ -297,16 +313,21 @@ feature names:
 from wagtail import blocks
 from wagtail.fields import RichTextField
 
-body = RichTextField(features=[
-    "bold", "italic", "h2", "h3",
-    # draftail_text_utils features:
-    "styled-link",
-    "text-color",
-    "highlight-color",
-    "font-family",
-    "font-size",
-    "text-alignment",
-])
+body = RichTextField(
+    features=[
+        "bold",
+        "italic",
+        "h2",
+        "h3",
+        # draftail_text_utils features:
+        "styled-link",
+        "text-color",
+        "highlight-color",
+        "font-family",
+        "font-size",
+        "text-alignment",
+    ]
+)
 ```
 
 ---

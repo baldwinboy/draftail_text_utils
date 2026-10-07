@@ -1,4 +1,4 @@
-/* stylelint-disable selector-class-pattern */
+/* stylelint-disable scss/selector-class-pattern */
 /* stylelint-disable declaration-property-value-allowed-list */
 .dtu-block_text-align {
   text-align: attr(data-dtu-text-align type(<custom-ident>), left);

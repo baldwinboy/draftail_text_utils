@@ -1,8 +1,9 @@
-/* stylelint-disable selector-class-pattern */
+/* stylelint-disable scss/selector-class-pattern */
 /* stylelint-disable declaration-property-value-allowed-list */
 /* stylelint-disable declaration-no-important */
 /* stylelint-disable scale-unlimited/declaration-strict-value */
 /* stylelint-disable property-disallowed-list */
+/* stylelint-disable property-no-deprecated */
 .Draftail--dtu-control {
   cursor: default !important;
   position: relative;
