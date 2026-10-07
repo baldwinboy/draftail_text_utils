@@ -21,17 +21,26 @@
 
 .Draftail--dtu-color-option-wrapper {
   flex: 0 0 calc(25% - 12px);
+  border: 0.3125rem solid var(--w-color-surface-menu-hover, #e8e8e8);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.Draftail--dtu-color-option-wrapper:hover,
+.Draftail--dtu-color-option-wrapper:has(.Draftail-ToolbarButton--active) {
+  border-color: var(--w-color-text-button-outline-default, #007d7e);
 }
 
 .Draftail--dtu-color-option {
   position: relative;
-  background: attr(name type(<color>), black) !important;
-  border: 0.3125rem solid var(--w-color-surface-menu-hover, #e8e8e8);
+  background: transparent !important;
+  border: 0 !important;
+  width: 100%;
+  min-height: 1.5rem;
 }
 
-.Draftail--dtu-color-option:hover,
-.Draftail--dtu-color-option.Draftail-ToolbarButton--active {
-  border: 0.3125rem solid var(--w-color-text-button-outline-default, #007d7e) !important;
+.Draftail--dtu-color-option:hover {
+  background: transparent !important;
 }
 
 .Draftail--dtu-color-hr {

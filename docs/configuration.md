@@ -37,10 +37,11 @@ DRAFTAIL_TEXT_UTILS = {
 
 ## Font sizes
 
-`FONT_SIZES` controls the range of sizes that the rich-text editor
-understands round-trip.  Every integer in `range(MIN, MAX+1, STEP)` is
-registered as a separate `InlineStyleFeature` so that any arbitrary size
-can round-trip through the database.
+`FONT_SIZES` controls the range of sizes the font-size control accepts.
+Sizes are stored as an inline `font-size` style on the unified `TEXT_STYLE`
+entity, so any value round-trips through the database. `MIN`/`MAX` bound the
+values accepted by the input and the increment/decrement buttons, and `STEP`
+is the amount those buttons change the size by.
 
 `PRESETS` controls which convenience options appear in the toolbar
 dropdown for quick selection.
@@ -291,12 +292,42 @@ DRAFTAIL_TEXT_UTILS = {
         "FONT_FAMILY": True,
         "FONT_SIZE": True,
         "TEXT_ALIGNMENT": False,  # disable alignment
+        "DYNAMIC_LINK": True,  # opt-in; host must resolve {{ … }} at render
     },
 }
 ```
 
 When a feature is disabled, its assets (JS, CSS) are not injected into
 the admin, and its Draftail plugins are not registered.
+
+> **`DYNAMIC_LINK`** is off by default. The Dynamic Link control stores a
+> context expression (e.g. `{{ user.url }}`) on the `TEXT_STYLE` entity but
+> does not resolve it. Enable it only when the host project resolves the
+> expression at render time (for example DaisIE's `daisie_richtext` tag, which
+> calls `resolve_dynamic_url`).
+
+### Supplying context to the Dynamic Link control
+
+The control can show a collapsible list of the values an author may link to.
+The host project sets `window.draftailTextUtils.dynamicLinkContext` (an array
+of groups); when it is absent the list is hidden:
+
+```js
+window.draftailTextUtils = window.draftailTextUtils || {};
+window.draftailTextUtils.dynamicLinkContext = [
+  {
+    title: "Account",
+    description: "django-allauth account URLs",
+    items: [
+      { token: "{{ account.login_url }}", description: "Sign-in page" },
+      { token: "{{ account.signup_url }}", description: "Sign-up page" },
+    ],
+  },
+];
+```
+
+Clicking a token inserts it into the expression field; it does not apply the
+link until the author confirms.
 
 ---
 
@@ -320,7 +351,7 @@ body = RichTextField(
         "h2",
         "h3",
         # draftail_text_utils features:
-        "styled-link",
+        "text-style-entity",  # styled links; required by text-color et al.
         "text-color",
         "highlight-color",
         "font-family",
@@ -329,6 +360,10 @@ body = RichTextField(
     ]
 )
 ```
+
+> **Note:** text colour, highlight colour, font size, styled document links
+> and context-bound links all use the unified `text-style-entity` feature, so
+> include `"text-style-entity"` in any restricted feature list.
 
 ---
 

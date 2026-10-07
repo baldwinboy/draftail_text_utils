@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+* Styled document links (`linktype="styled-document"`) that keep colour,
+  highlight and size on save and on the public site.
+* Context-bound dynamic links (`linktype="dynamic"`) carrying an expression
+  resolved by the host project, so `{{ … }}` links can be styled.
+
+### Fixed
+
+* Font-family type IDs are normalised identically during feature registration
+  and admin data injection, so labels containing punctuation or repeated
+  spaces now apply correctly (and lazy translation labels no longer raise).
+* Font size honours `MIN`/`MAX`/`STEP` for both typed input and the
+  increment/decrement buttons.
+* Text alignment and colour swatches no longer rely on typed CSS `attr()`,
+  which is not supported in all browsers.
+
+### Changed
+
+* Corrected documentation to reference the `text-style-entity` feature (the
+  previous `styled-link` name did not exist).
+
 ## [0.3.1](https://github.com/baldwinboy/draftail_text_utils/compare/v0.3.0...v0.3.1) (2026-09-25)
 
 

@@ -121,7 +121,7 @@
       var currentSize = isNaN(activeSize || this.state.inputValue || 'NaN')
         ? 16
         : parseInt(activeSize || this.state.inputValue);
-      this.applyFontSize(Math.min(MAX_FONT_SIZE, currentSize + 1));
+      this.applyFontSize(Math.min(MAX_FONT_SIZE, currentSize + FONT_SIZE_STEP));
     }
 
     decrement() {
@@ -129,7 +129,7 @@
       var currentSize = isNaN(activeSize || this.state.inputValue || 'NaN')
         ? 16
         : parseInt(activeSize || this.state.inputValue);
-      this.applyFontSize(Math.max(MIN_FONT_SIZE, currentSize - 1));
+      this.applyFontSize(Math.max(MIN_FONT_SIZE, currentSize - FONT_SIZE_STEP));
     }
 
     // event handlers
@@ -167,7 +167,7 @@
         e.preventDefault();
         if (e.key === 'Enter') {
           var size = parseInt(this.state.inputValue, 10);
-          if (size > 0 && size <= 400) {
+          if (size >= MIN_FONT_SIZE && size <= MAX_FONT_SIZE) {
             this.applyFontSize(size);
           } else {
             this.syncInputValue();

@@ -1,5 +1,17 @@
 /* stylelint-disable scss/selector-class-pattern */
 /* stylelint-disable declaration-property-value-allowed-list */
-.dtu-block_text-align {
-  text-align: attr(data-dtu-text-align type(<custom-ident>), left);
+.dtu-block_text-align[data-dtu-text-align='start'] {
+  text-align: start;
+}
+
+.dtu-block_text-align[data-dtu-text-align='center'] {
+  text-align: center;
+}
+
+.dtu-block_text-align[data-dtu-text-align='end'] {
+  text-align: end;
+}
+
+.dtu-block_text-align[data-dtu-text-align='justify'] {
+  text-align: justify;
 }

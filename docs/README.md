@@ -45,7 +45,7 @@ body = RichTextField()
 # Or with selective features:
 body = RichTextField(features=[
     "bold", "italic",
-    "styled-link",
+    "text-style-entity",  # styled links (required by text-color etc.)
     "text-color",
     "font-family", "font-size",
 ])
@@ -66,11 +66,12 @@ src/draftail_text_utils/
 │   ├── highlight_color.py
 │   ├── font_family.py
 │   ├── font_size.py
-│   └── text_alignment.py
+│   ├── text_alignment.py
+│   └── text_style.py    # Unified TEXT_STYLE entity + converters/link handlers
 ├── static/
 │   └── draftail_text_utils/
-│       ├── js/          # 7 JS control/entity plugins
-│       └── css/         # 5 CSS files
+│       ├── js/          # 8 JS control/entity plugins
+│       └── css/         # 8 CSS files
 ├── templates/
 └── test/
 ```
@@ -82,9 +83,9 @@ src/draftail_text_utils/
 | `text-style-entity` | Entity | `text_style_entity.js` + `styled_link_source.js` + `common.js` | - | Unified entity for text colour, highlight, font size, AND styled links with tooltip (Edit/Remove) |
 | `text-color` | Control (TEXT_STYLE entity) | `text_color.js` + `common.js` | `text_color.css` | Apply/remove text colour |
 | `highlight-color` | Control (TEXT_STYLE entity) | `highlight_color.js` + `common.js` | `highlight_color.css` | Apply/remove highlight colour |
-| `font-family` | InlineStyle + Control | `font_family.js` | `font_family.css` | Font family dropdown |
-| `font-size` | InlineStyle + Control | `font_size.js` | `font_size.css` | Size input + presets |
-| `text-alignment` | InlineStyle + Control | `text_alignment.js` | `text_alignment.css` | Alignment button group |
+| `font-family` | InlineStyle (per family) + Control | `font_family.js` | `font_family.css` | Font family dropdown |
+| `font-size` | Control (TEXT_STYLE entity) | `font_size.js` | `font_size.css` | Size input + presets (honours MIN/MAX/STEP) |
+| `text-alignment` | Block + Control | `text_alignment.js` | `text_alignment.css` | Alignment button group |
 
 ## Configuration
 
