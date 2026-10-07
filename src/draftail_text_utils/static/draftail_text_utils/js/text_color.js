@@ -76,6 +76,7 @@
         {
           key: `TEXT_COLOR_OPT_${opt.key.toUpperCase()}`,
           className: 'Draftail--dtu-color-option-wrapper',
+          style: { backgroundColor: opt.value },
         },
         React.createElement(ToolbarButton, {
           name: opt.value === 'transparent' ? '#00000000' : opt.value,

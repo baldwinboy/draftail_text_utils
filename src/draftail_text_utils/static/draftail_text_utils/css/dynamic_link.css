@@ -1,0 +1,79 @@
+/* stylelint-disable scss/selector-class-pattern */
+/* stylelint-disable declaration-property-value-allowed-list */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable scale-unlimited/declaration-strict-value */
+/* stylelint-disable property-disallowed-list */
+/* stylelint-disable color-named */
+.Draftail--dynamic-link-dropdown[aria-expanded='true'] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 16rem;
+  max-width: 22rem;
+  max-height: 20rem;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.Draftail--dynamic-link-input {
+  min-height: 0;
+  height: 1.875rem;
+  width: 100%;
+  padding-inline: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.Draftail--dynamic-link-actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.Draftail--dynamic-link-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-block-start: 0.25rem;
+}
+
+.Draftail--dynamic-link-group > summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding-block: 0.125rem;
+}
+
+.Draftail--dynamic-link-token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin: 0.25rem 0 0.5rem;
+  padding-inline-start: 0.5rem;
+  list-style: none;
+}
+
+.Draftail--dynamic-link-token-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.Draftail--dynamic-link-token {
+  cursor: pointer;
+  padding: 0.125rem 0.25rem;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  font-family: monospace;
+  font-size: 0.75rem;
+  text-align: start;
+}
+
+.Draftail--dynamic-link-token:hover {
+  background: var(--w-color-surface-menu-hover, #f0f0f0);
+}
+
+.Draftail--dynamic-link-token-desc {
+  padding-inline-start: 0.25rem;
+  color: var(--w-color-text-meta, #666);
+  font-size: 0.6875rem;
+}

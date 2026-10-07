@@ -6,9 +6,11 @@ Registers:
 - A ``"font-family"`` ControlFeature for the toolbar dropdown.
 """
 
-import re
-
-from draftail_text_utils.conf import feature_enabled, load_font_families
+from draftail_text_utils.conf import (
+    feature_enabled,
+    font_family_type_id,
+    load_font_families,
+)
 
 from .base import (
     control_json_script,
@@ -28,8 +30,7 @@ def register(features):
 
     for font in font_families:
         font_family = font["value"]
-        label = re.sub("[^0-9a-zA-Z]+", "_", font["label"]).upper()
-        type_ = font.get("type", f"FONT_FAMILY_{label}")
+        type_ = font.get("type") or font_family_type_id(font["label"])
 
         register_inline_style_feature(
             features,

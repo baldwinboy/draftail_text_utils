@@ -11,6 +11,7 @@ from draftail_text_utils.conf import (
     _extract_struct_from_field,
     _find_design_settings_model,
     _normalise_font_urls,
+    font_family_type_id,
     get_font_sizes,
     get_setting,
     load_color_palette,
@@ -36,6 +37,30 @@ def _fake_import(fake_module):
         return _real_import_module(name)
 
     return side_effect
+
+
+class TestFontFamilyTypeId:
+    def test_simple_label(self):
+        assert font_family_type_id("Roboto") == "FONT_FAMILY_ROBOTO"
+
+    def test_spaces_become_underscores(self):
+        assert font_family_type_id("Open Sans") == "FONT_FAMILY_OPEN_SANS"
+
+    def test_punctuation_is_normalised(self):
+        assert font_family_type_id("Roboto (serif)") == "FONT_FAMILY_ROBOTO_SERIF"
+
+    def test_hyphens_and_repeats_collapse(self):
+        assert font_family_type_id("Noto  Sans-SC") == "FONT_FAMILY_NOTO_SANS_SC"
+
+    def test_lazy_label_is_coerced(self):
+        from django.utils.translation import gettext_lazy as _
+
+        assert font_family_type_id(_("Open Sans")) == "FONT_FAMILY_OPEN_SANS"
+
+    def test_leading_trailing_punctuation_stripped(self):
+        assert font_family_type_id("  'Roboto', sans-serif ") == (
+            "FONT_FAMILY_ROBOTO_SANS_SERIF"
+        )
 
 
 class TestDefaultConfig:

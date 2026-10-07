@@ -11,17 +11,19 @@ from urllib.parse import urljoin
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.templatetags.static import static
-from django.utils.html import format_html, mark_safe
+from django.utils.html import escape, format_html, mark_safe
 from wagtail import hooks
 
 from draftail_text_utils.conf import (
     feature_enabled,
+    font_family_type_id,
     get_font_sizes,
     load_color_palette,
     load_font_families,
     load_font_urls,
 )
 from draftail_text_utils.rich_text import (
+    dynamic_link,
     font_family,
     font_size,
     highlight_color,
@@ -81,6 +83,11 @@ def register_font_size_feature(features):
     font_size.register(features)
 
 
+@hooks.register("register_rich_text_features")
+def register_dynamic_link_feature(features):
+    dynamic_link.register(features)
+
+
 # ---------------------------------------------------------------------------
 # Asset injection
 # ---------------------------------------------------------------------------
@@ -90,10 +97,14 @@ def _feature_static(path):
     return static(f"draftail_text_utils/{path}")
 
 
+def _ordered_unique(items):
+    """Return ``items`` de-duplicated while preserving order."""
+    return list(dict.fromkeys(items))
+
+
 @hooks.register("insert_global_admin_css")
 def global_admin_css():
-    links = set()
-    preconnect_links = set()
+    links = []
 
     css_map = {
         "TEXT_COLOR": "css/text_color.css",
@@ -101,32 +112,40 @@ def global_admin_css():
         "FONT_FAMILY": "css/font_family.css",
         "FONT_SIZE": "css/font_size.css",
         "TEXT_ALIGNMENT": "css/text_alignment.css",
+        "DYNAMIC_LINK": "css/dynamic_link.css",
     }
 
     for feature_name, css_path in css_map.items():
         if feature_enabled(feature_name):
-            links.add(f'<link rel="stylesheet" href="{_feature_static(css_path)}">')
+            links.append(f'<link rel="stylesheet" href="{_feature_static(css_path)}">')
 
-            if feature_name == "TEXT_COLOR" or feature_name == "HIGHLIGHT_COLOR":
-                links.add(
+            if feature_name in ("TEXT_COLOR", "HIGHLIGHT_COLOR"):
+                links.append(
                     f'<link rel="stylesheet" href="{_feature_static("css/color.css")}">'
                 )
 
     # Add common assets if not empty
-    if len(links) > 0:
-        links.add(f'<link rel="stylesheet" href="{_feature_static("css/common.css")}">')
-        links.add(
+    if links:
+        links.append(
+            f'<link rel="stylesheet" href="{_feature_static("css/common.css")}">'
+        )
+        links.append(
             f'<link rel="preload" href="{_feature_static("js/common.js")}" as="script">'
         )
-        links.add(f'<script src="{_feature_static("js/common.js")}"></script>')
+        links.append(f'<script src="{_feature_static("js/common.js")}"></script>')
 
-    # Load font stylesheets
+    # Load font stylesheets (URLs come from settings/data, so escape them)
+    preconnect_links = []
     for url in load_font_urls():
         if url:
-            preconnect_links.add(f'<link rel="preconnect" href="{urljoin(url, "/")}">')
-            links.add(f'<link rel="stylesheet" href="{url}">')
+            preconnect_links.append(
+                f'<link rel="preconnect" href="{escape(urljoin(url, "/"))}">'
+            )
+            links.append(f'<link rel="stylesheet" href="{escape(url)}">')
 
-    return mark_safe("\n".join(links.union(preconnect_links)))  # noqa: S308
+    return mark_safe(  # noqa: S308
+        "\n".join(_ordered_unique(links + preconnect_links))
+    )
 
 
 @hooks.register("insert_global_admin_js")
@@ -165,6 +184,9 @@ def global_admin_js():
     if feature_enabled("TEXT_ALIGNMENT"):
         scripts.append(text_alignment.control())
 
+    if feature_enabled("DYNAMIC_LINK"):
+        scripts.append(dynamic_link.control())
+
     return mark_safe("\n".join(scripts))  # noqa: S308
 
 
@@ -194,19 +216,9 @@ def _color_script(colors):
         }
         for c in colors
     ]
-    text_color_style_map = {
-        f"TEXT_COLOR_{c['key'].upper()}": {"color": c["value"]} for c in colors
-    }
-    highlight_color_style_map = {
-        f"HIGHLIGHT_COLOR_{c['key'].upper()}": {"backgroundColor": c["value"]}
-        for c in colors
-    }
-
     data = {
         "customTextColors": text_colors,
         "customHighlightColors": highlight_colors,
-        "customTextColorStyleMap": text_color_style_map,
-        "customHighlightColorStyleMap": highlight_color_style_map,
     }
     json_str = json.dumps(data, cls=DjangoJSONEncoder)
     return format_html(
@@ -221,11 +233,9 @@ def _font_family_script(families):
     data = {
         "customFontFamilies": [
             {
-                "label": f["label"],
+                "label": str(f["label"]),
                 "value": f["value"],
-                "type": f.get(
-                    "type", f"FONT_FAMILY_{f['label'].upper().replace(' ', '_')}"
-                ),
+                "type": f.get("type") or font_family_type_id(f["label"]),
                 "style": {"fontFamily": f["value"]},
             }
             for f in families

@@ -27,6 +27,11 @@
     var size = data.size;
     var linkUrl = data.url;
     var linkId = data.id;
+    var documentId = data.document_id;
+    var dynamic = data.dynamic;
+    if (!linkUrl && dynamic) {
+      linkUrl = dynamic;
+    }
 
     var style = {};
     if (color) style.color = color;
@@ -46,7 +51,11 @@
         );
     };
 
-    var hasLink = linkUrl || linkId !== undefined;
+    var hasLink =
+      linkUrl ||
+      linkId !== undefined ||
+      documentId !== undefined ||
+      Boolean(dynamic);
 
     if (hasLink) {
       var TooltipEntity = window.draftail.TooltipEntity;

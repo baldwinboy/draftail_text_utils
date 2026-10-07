@@ -68,6 +68,9 @@
       mergedData.url = '';
       delete mergedData.id;
       delete mergedData.parentId;
+      delete mergedData.document_id;
+      delete mergedData.filename;
+      delete mergedData.dynamic;
 
       var contentState = editorState.getCurrentContent();
       var selection = editorState.getSelection();
@@ -143,6 +146,9 @@
         mergedData.url = '';
         delete mergedData.id;
         delete mergedData.parentId;
+        delete mergedData.document_id;
+        delete mergedData.filename;
+        delete mergedData.dynamic;
 
         // Check if there are any style properties left
         var hasStyles =

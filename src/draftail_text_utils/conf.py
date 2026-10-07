@@ -42,18 +42,33 @@ Usage in your Django settings:
             "FONT_FAMILY": True,
             "FONT_SIZE": True,
             "TEXT_ALIGNMENT": True,
+            "DYNAMIC_LINK": False,
         },
     }
 """
 
 import importlib
 import logging
+import re
 
 from django.conf import settings
 from wagtailtraverse import traverse_value
 
 
 logger = logging.getLogger(__name__)
+
+
+def font_family_type_id(label):
+    """
+    Return the stable Draftail type identifier for a font-family ``label``.
+
+    Shared by feature registration and admin data injection so the toolbar
+    option always matches the registered inline style, regardless of the
+    characters in the label (spaces, hyphens, parentheses, etc.). Labels may be
+    lazy translation proxies, so they are coerced with ``str`` first.
+    """
+    slug = re.sub(r"[^0-9A-Za-z]+", "_", str(label)).strip("_").upper()
+    return f"FONT_FAMILY_{slug}"
 
 
 DEFAULT_FONT_SIZES = {
@@ -85,6 +100,9 @@ DEFAULT_FEATURES = {
     "FONT_FAMILY": True,
     "FONT_SIZE": True,
     "TEXT_ALIGNMENT": True,
+    # Opt-in: the host project must resolve the stored expression at render
+    # time (DaisIE does this in ``daisie_richtext``).
+    "DYNAMIC_LINK": False,
 }
 
 
@@ -173,8 +191,9 @@ def _extract_struct_from_field(field_value):
 
 def _find_design_settings_model(module):
     """Find a SiteDesignSettings-style model class in a module."""
-    for attr_name in dir(module):
-        attr = getattr(module, attr_name)
+    # Use vars() rather than getattr() so module descriptors/properties are not
+    # triggered during discovery.
+    for attr in vars(module).values():
         if isinstance(attr, type) and hasattr(attr, "_meta"):
             try:
                 if attr._meta.label and "SiteDesignSettings" in attr.__name__:
@@ -186,8 +205,7 @@ def _find_design_settings_model(module):
 
 def _find_typography_block(module):
     """Find a TypographyBlock / TypographyStreamBlock class in a module."""
-    for attr_name in dir(module):
-        attr = getattr(module, attr_name)
+    for attr in vars(module).values():
         if isinstance(attr, type) and "Typography" in getattr(attr, "__name__", ""):
             return attr
     return None
@@ -208,7 +226,9 @@ def _normalise_font_urls(font_urls):
 
 
 def load_color_palette():
-    colors_config = get_setting("COLORS", {})
+    colors_config = get_setting("COLORS", {}) or {}
+    if not isinstance(colors_config, dict):
+        colors_config = {}
 
     callable_path = colors_config.get("CALLABLE")
     if callable_path:

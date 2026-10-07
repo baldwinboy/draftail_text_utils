@@ -166,7 +166,11 @@
           try {
             var ent = contentState.getEntity(ek);
             var eType = ent.getType();
-            if (eType !== entityType && eType !== 'LINK') {
+            if (
+              eType !== entityType &&
+              eType !== 'LINK' &&
+              eType !== 'DOCUMENT'
+            ) {
               hasOtherEntity = true;
             }
           } catch (e) {
@@ -199,11 +203,23 @@
           try {
             var ent = contentState.getEntity(ek);
             var eType = ent.getType();
-            if (eType === entityType || eType === 'LINK') {
+            if (
+              eType === entityType ||
+              eType === 'LINK' ||
+              eType === 'DOCUMENT'
+            ) {
               if (existingKey === null) {
                 existingKey = ek;
-                existingData = ent.getData();
                 firstKey = ek;
+                var entData = ent.getData();
+                existingData =
+                  eType === 'DOCUMENT'
+                    ? {
+                        document_id: entData.id,
+                        url: entData.url || '',
+                        filename: entData.filename || '',
+                      }
+                    : entData;
               } else if (ek !== firstKey) {
                 uniformSelection = false;
               }
@@ -284,7 +300,13 @@
             for (var k in entityData) {
               if (entityData.hasOwnProperty(k) && k !== propertyKey) {
                 newData[k] = entityData[k];
-                if (k === 'url' || k === 'id' || k === 'parentId') {
+                if (
+                  k === 'url' ||
+                  k === 'id' ||
+                  k === 'parentId' ||
+                  k === 'document_id' ||
+                  k === 'dynamic'
+                ) {
                   hasLinkData = true;
                 } else {
                   hasOtherStyle = true;

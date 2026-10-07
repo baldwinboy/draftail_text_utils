@@ -6,6 +6,7 @@ from django.test import override_settings
 from draftjs_exporter.dom import DOM
 
 from draftail_text_utils.rich_text import (
+    dynamic_link,
     font_family,
     font_size,
     highlight_color,
@@ -107,6 +108,33 @@ class TestFontFamilyRegistration:
             assert "font-family" in features.plugins
             assert "font-family" in features.default_features
 
+    def test_normalises_type_id_for_punctuated_labels(self):
+        with override_settings(
+            DRAFTAIL_TEXT_UTILS={
+                "FONT_FAMILIES": [
+                    {"label": "Roboto (serif)", "value": "Roboto, serif"},
+                ]
+            }
+        ):
+            features = FakeFeatures()
+            font_family.register(features)
+            assert "FONT_FAMILY_ROBOTO_SERIF" in features.default_features
+
+    def test_type_id_matches_injected_control_data(self):
+        """The registration type and the injected data type must match."""
+        families = [
+            {"label": "Noto  Sans-SC", "value": "'Noto Sans SC', sans-serif"},
+        ]
+        with override_settings(DRAFTAIL_TEXT_UTILS={"FONT_FAMILIES": families}):
+            features = FakeFeatures()
+            font_family.register(features)
+
+            from draftail_text_utils.wagtail_hooks import _font_family_script
+
+            script = str(_font_family_script(families))
+            assert "FONT_FAMILY_NOTO_SANS_SC" in script
+            assert "FONT_FAMILY_NOTO_SANS_SC" in features.default_features
+
 
 class TestFontSizeRegistration:
     def test_registers_control_plugin(self):
@@ -129,6 +157,28 @@ class TestFontSizeRegistration:
             features = FakeFeatures()
             font_size.register(features)
             assert "font-size" in features.default_features
+
+
+class TestDynamicLinkRegistration:
+    def test_disabled_by_default(self):
+        features = FakeFeatures()
+        dynamic_link.register(features)
+        assert "dynamic-link" not in features.default_features
+
+    def test_enabled_via_settings(self):
+        with override_settings(
+            DRAFTAIL_TEXT_UTILS={"FEATURES": {"DYNAMIC_LINK": True}}
+        ):
+            features = FakeFeatures()
+            dynamic_link.register(features)
+            assert "dynamic-link" in features.plugins
+            assert "dynamic-link" in features.default_features
+
+    def test_control_returns_json_when_enabled(self):
+        with override_settings(
+            DRAFTAIL_TEXT_UTILS={"FEATURES": {"DYNAMIC_LINK": True}}
+        ):
+            assert "draftail-plugin-control-dynamic-link" in str(dynamic_link.control())
 
 
 class TestTextStyleRegistration:
@@ -604,6 +654,74 @@ class TestStyledLinkHtmlOutput:
         assert "color: #ff0000 !important" in html
         assert "background-color: #00ff00 !important" in html
         assert "font-size: 18px !important" in html
+
+
+class TestDocumentAndDynamicLinks:
+    """Server-side round-trip for styled document and dynamic (context) links."""
+
+    def test_decorator_creates_styled_document_link(self):
+        el = text_style.text_style_entity_decorator(
+            {"document_id": 3, "color": "#ff0000", "children": "doc"}
+        )
+        assert el.type == "a"
+        assert el.attr.get("linktype") == "styled-document"
+        assert el.attr.get("id") == "3"
+        assert el.attr.get("data-entity-type") == "TEXT_STYLE"
+        assert "color: #ff0000 !important" in el.attr.get("style", "")
+
+    def test_decorator_creates_dynamic_link(self):
+        el = text_style.text_style_entity_decorator(
+            {"dynamic": "{{ blog_post.url }}", "children": "post"}
+        )
+        assert el.type == "a"
+        assert el.attr.get("linktype") == "dynamic"
+        assert el.attr.get("href") == "#"
+        assert el.attr.get("data-dynamic") == "{{ blog_post.url }}"
+        assert el.attr.get("data-entity-type") == "TEXT_STYLE"
+
+    def test_handler_parses_styled_document(self):
+        handler = text_style.StyledLinkElementHandler("TEXT_STYLE")
+        data = handler.get_attribute_data(
+            {"linktype": "styled-document", "id": "5", "style": "color: red;"}
+        )
+        assert data["document_id"] == 5
+        assert data["color"] in ("red", "#f00", "#ff0000")
+
+    def test_handler_parses_dynamic(self):
+        handler = text_style.StyledLinkElementHandler("TEXT_STYLE")
+        data = handler.get_attribute_data(
+            {"linktype": "dynamic", "data-dynamic": "{{ user.url }}"}
+        )
+        assert data["dynamic"] == "{{ user.url }}"
+
+    def test_dynamic_handler_preserves_style(self):
+        result = text_style.StyledDynamicLinkHandler.expand_db_attributes(
+            {"data-dynamic": "{{ user.url }}", "style": "color: red;"}
+        )
+        assert 'data-dynamic="{{ user.url }}"' in result
+        assert 'style="color: red;"' in result
+        assert 'href="#"' in result
+
+    def test_document_handler_preserves_style(self):
+        handler = text_style.StyledDocumentLinkHandler
+
+        class FakeDocument:
+            url = "/media/doc.pdf"
+
+        original = handler.get_many.__func__
+        handler.get_many = classmethod(lambda cls, attrs: [FakeDocument(), None])
+        try:
+            results = handler.expand_db_attributes_many(
+                [
+                    {"id": "1", "style": "color: red;"},
+                    {"id": "2"},
+                ]
+            )
+        finally:
+            handler.get_many = classmethod(original)
+
+        assert results[0] == '<a href="/media/doc.pdf" style="color: red;">'
+        assert results[1] == "<a>"
 
 
 class TestStyleLinkRoundTrip:
