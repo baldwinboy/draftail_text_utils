@@ -13,5 +13,8 @@
     "lint:format": "prettier --check \"**/?(.)*.{css,scss,js,ts,tsx,json,yaml,yml}\"",
     "lint:css": "stylelint --aei --fix lax \"**/?(.)*.{css,scss}\"",
     "format": "prettier --write \"**/?(.)*.{css,scss,js,ts,tsx,json,yaml,yml}\""
+  },
+  "overrides": {
+    "stylelint": "^17.16.0"
   }
 }

@@ -1,4 +1,3 @@
-VERSION = (0, 3, 1)
-__version__ = ".".join(map(str, VERSION))
+__version__ = "3.0.0"
 
 default_app_config = "draftail_text_utils.apps.DraftailTextUtilsAppConfig"
