@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0](https://github.com/baldwinboy/draftail_text_utils/compare/v0.3.1...v3.0.0) (2026-10-07)
+
+
+### Features
+
+* add dynamic links ([e94e9a0](https://github.com/baldwinboy/draftail_text_utils/commit/e94e9a0744a1425727086e2fe2e5edba8216f307))
+
+
+### Miscellaneous Chores
+
+* release 3.0.0 ([e1e363d](https://github.com/baldwinboy/draftail_text_utils/commit/e1e363d4c1f1eefb34616c8d0db833dfbea8cdc5))
+
 ## [Unreleased]
 
 ### Added
