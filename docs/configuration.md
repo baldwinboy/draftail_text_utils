@@ -365,6 +365,27 @@ body = RichTextField(
 > and context-bound links all use the unified `text-style-entity` feature, so
 > include `"text-style-entity"` in any restricted feature list.
 
+### Text alignment and block types
+
+Text alignment is stored in the Draft.js block `data`, not in a separate block
+type. This means alignment can coexist with `h2`, `h3`, lists, blockquotes,
+and other block features instead of replacing them.
+
+If you use a restricted feature list, include `"text-alignment"` **after** the
+block features (for example after `"h2"`, `"h3"`, `"ul"`). Its converter rule
+overrides the database representation of those blocks so alignment survives a
+round trip.
+
+Aligned content is written as the original element with alignment attributes,
+for example:
+
+```html
+<h2 class="dtu-block_text-align" data-dtu-text-align="center">Heading</h2>
+```
+
+Older content saved as `<div class="dtu-block_text-align" ...>` is still
+parsed and re-saved correctly.
+
 ---
 
 ## Colours from an existing `SiteDesignSettings` model

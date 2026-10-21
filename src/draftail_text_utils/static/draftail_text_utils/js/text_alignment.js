@@ -12,12 +12,20 @@
 
 (function () {
   var React = window.React;
-  var RichUtils = window.DraftJS.RichUtils;
+  var DraftJS = window.DraftJS;
   var ToolbarButton = window.Draftail.ToolbarButton;
   var dt = window.DraftailTextUtils;
   var data = window.draftailTextUtils || {};
   const control = dt.parseControl('text-alignment');
   const options = control.data || [];
+
+  // Legacy alignment was stored as a block type instead of block data.
+  const LEGACY_ALIGNMENTS = {
+    ALIGNMENT_LEFT: 'left',
+    ALIGNMENT_CENTER: 'center',
+    ALIGNMENT_RIGHT: 'right',
+    ALIGNMENT_JUSTIFY: 'justify',
+  };
 
   // ── Helper to find active text alignment ──
   function getActiveOption(editorState) {
@@ -26,8 +34,60 @@
       .getCurrentContent()
       .getBlockForKey(selection.getStartKey());
     if (!block) return null;
-    const blockType = block.getType();
-    return options.find((opt) => opt.type === blockType) || null;
+    const alignment =
+      block.getData().get('alignment') || LEGACY_ALIGNMENTS[block.getType()];
+    return options.find((opt) => opt.value === alignment) || null;
+  }
+
+  function setAlignment(editorState, alignment) {
+    const selection = editorState.getSelection();
+    const startKey = selection.getStartKey();
+    const endKey = selection.getEndKey();
+    let content = editorState.getCurrentContent();
+    let blockKey = startKey;
+
+    while (blockKey) {
+      let block = content.getBlockForKey(blockKey);
+      const blockSelection = selection.merge({
+        anchorKey: blockKey,
+        anchorOffset: 0,
+        focusKey: blockKey,
+        focusOffset: block.getLength(),
+        isBackward: false,
+      });
+
+      // Migrate legacy ALIGNMENT_* blocks to a regular paragraph plus block
+      // data, so the new control can update them.
+      if (LEGACY_ALIGNMENTS[block.getType()]) {
+        content = DraftJS.Modifier.setBlockType(
+          content,
+          blockSelection,
+          'unstyled',
+        );
+        block = content.getBlockForKey(blockKey);
+      }
+
+      let blockData = block.getData();
+      if (alignment) {
+        blockData = blockData.set('alignment', alignment);
+      } else {
+        blockData = blockData.delete('alignment');
+      }
+
+      content = DraftJS.Modifier.setBlockData(
+        content,
+        blockSelection,
+        blockData,
+      );
+
+      if (blockKey === endKey) break;
+      blockKey = content.getKeyAfter(blockKey);
+    }
+
+    return DraftJS.EditorState.forceSelection(
+      DraftJS.EditorState.push(editorState, content, 'change-block-data'),
+      selection,
+    );
   }
 
   class TextAlignmentControl extends React.Component {
@@ -65,8 +125,10 @@
     handleOptionClick = (opt) => {
       const { getEditorState, onChange } = this.props;
       const editorState = getEditorState();
-      const newState = RichUtils.toggleBlockType(editorState, opt.type);
-      onChange(newState);
+      const activeOption = getActiveOption(editorState);
+      const removing = activeOption && activeOption.type === opt.type;
+
+      onChange(setAlignment(editorState, removing ? null : opt.value));
       this.setState({ isOpen: false });
     };
 
@@ -124,6 +186,35 @@
         dropdown,
         button,
       );
+    }
+  }
+
+  function blockStyleFn(block) {
+    const alignment = block.getData().get('alignment');
+    if (!alignment) return null;
+    return `Draftail-block--ALIGNMENT_${alignment.toUpperCase()}`;
+  }
+
+  // Add alignment classes to the editor blocks without changing their type.
+  if (window.draftail && window.draftail.initEditor) {
+    var originalInitEditor = window.draftail.initEditor;
+    if (!originalInitEditor.__dtuTextAlignment) {
+      var patchedInitEditor = function (selector, options, script) {
+        options = options || {};
+        options.plugins = (options.plugins || []).concat([
+          {
+            type: 'dtu-text-alignment',
+            blockStyleFn: blockStyleFn,
+          },
+        ]);
+        return Reflect.apply(originalInitEditor, window.draftail, [
+          selector,
+          options,
+          script,
+        ]);
+      };
+      patchedInitEditor.__dtuTextAlignment = true;
+      window.draftail.initEditor = patchedInitEditor;
     }
   }
 

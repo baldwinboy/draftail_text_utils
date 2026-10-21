@@ -309,13 +309,90 @@ class TestTextAlignmentRegistration:
         assert "text-alignment" in features.plugins
         assert "text-alignment" in features.default_features
 
-    def test_converter_uses_div_element(self):
+    def test_legacy_converter_uses_div_element(self):
         features = FakeFeatures()
         text_alignment.register(features)
         rule = features.converter_rules["ALIGNMENT_CENTER"]
         block_entry = rule["to_database_format"]["block_map"]["ALIGNMENT_CENTER"]
         assert block_entry["element"] == "div"
         assert "dtu-block_text-align" in block_entry["props"]["class"]
+        assert (
+            "div.dtu-block_text-align[data-dtu-text-align='center']"
+            in rule["from_database_format"]
+        )
+
+    def test_registers_block_data_converter(self):
+        features = FakeFeatures()
+        text_alignment.register(features)
+        rule = features.converter_rules["text-alignment"]
+        block_map = rule["to_database_format"]["block_map"]
+        assert "unstyled" in block_map
+        assert "header-two" in block_map
+        assert "header-three" in block_map
+        assert "blockquote" in block_map
+        assert "unordered-list-item" in block_map
+        assert "ordered-list-item" in block_map
+        assert block_map["unordered-list-item"]["wrapper"] == "ul"
+        assert block_map["ordered-list-item"]["wrapper"] == "ol"
+
+        from_db = rule["from_database_format"]
+        assert "h2[data-dtu-text-align='center']" in from_db
+        assert "h3[data-dtu-text-align='end']" in from_db
+        assert "p[data-dtu-text-align='start']" in from_db
+        assert "li[data-dtu-text-align='justify']" in from_db
+
+    def test_alignment_block_stores_data(self):
+        block = text_alignment.AlignmentBlock(
+            "header-two", key="abcde", alignment="center"
+        )
+        assert block.as_dict()["type"] == "header-two"
+        assert block.as_dict()["data"] == {"alignment": "center"}
+
+    def test_alignment_handler_preserves_heading_type(self):
+        handler = text_alignment.AlignmentHandler("header-two")
+
+        class State:
+            list_depth = 0
+            list_item_type = None
+
+        block = handler.create_block(
+            "h2", {"data-dtu-text-align": "center"}, State(), None
+        )
+        assert block.type == "header-two"
+        assert block.data == {"alignment": "center"}
+
+    def test_alignment_handler_preserves_list_type(self):
+        handler = text_alignment.AlignmentHandler()
+
+        class State:
+            list_depth = 1
+            list_item_type = "unordered-list-item"
+
+        block = handler.create_block(
+            "li", {"data-dtu-text-align": "end"}, State(), None
+        )
+        assert block.type == "unordered-list-item"
+        assert block.data == {"alignment": "right"}
+
+    def test_alignment_element_adds_data_only_when_aligned(self):
+        DOM.use(DOM.STRING)
+
+        aligned = text_alignment._alignment_element("h2")(
+            {
+                "block": {"data": {"alignment": "center"}},
+                "children": "Heading",
+            }
+        )
+        assert aligned.type == "h2"
+        assert aligned.attr["class"] == "dtu-block_text-align"
+        assert aligned.attr["data-dtu-text-align"] == "center"
+
+        unaligned = text_alignment._alignment_element("h2")(
+            {"block": {"data": {}}, "children": "Heading"}
+        )
+        assert unaligned.type == "h2"
+        assert "class" not in unaligned.attr
+        assert "data-dtu-text-align" not in unaligned.attr
 
     def test_disabled_via_settings(self):
         with override_settings(
@@ -448,6 +525,93 @@ class TestConverterRoundTrip:
 # ---------------------------------------------------------------------------
 # Styled link handler tests
 # ---------------------------------------------------------------------------
+
+
+class TestHeadingStyleCoexistence:
+    """Custom inline styles and alignment must not replace heading block types."""
+
+    def test_aligned_heading_with_text_style_round_trip(self):
+        import json
+
+        from wagtail.admin.rich_text.converters.contentstate import (
+            ContentstateConverter,
+        )
+
+        converter = ContentstateConverter(
+            features=["h2", "text-style-entity", "text-alignment"]
+        )
+        html = (
+            '<h2 data-dtu-text-align="center">Hello '
+            '<span data-entity-type="TEXT_STYLE" '
+            'style="color: #ff0000 !important;">world</span></h2>'
+        )
+
+        contentstate = converter.from_database_format(html)
+        blocks = json.loads(contentstate)["blocks"]
+        assert blocks[0]["type"] == "header-two"
+        assert blocks[0]["data"]["alignment"] == "center"
+        assert blocks[0]["entityRanges"]
+
+        output = converter.to_database_format(contentstate)
+        assert "<h2" in output
+        assert 'data-dtu-text-align="center"' in output
+        assert 'data-entity-type="TEXT_STYLE"' in output
+        assert (
+            'style="color: #ff0000 !important;"' in output
+            or 'style="color: #f00 !important;"' in output
+        )
+
+    def test_aligned_list_item_round_trip(self):
+        import json
+
+        from wagtail.admin.rich_text.converters.contentstate import (
+            ContentstateConverter,
+        )
+
+        converter = ContentstateConverter(features=["ul", "text-alignment"])
+        html = '<ul><li data-dtu-text-align="end">One</li><li>Two</li></ul>'
+
+        contentstate = converter.from_database_format(html)
+        blocks = json.loads(contentstate)["blocks"]
+        assert blocks[0]["type"] == "unordered-list-item"
+        assert blocks[0]["data"]["alignment"] == "right"
+        assert "data" not in blocks[1]
+
+        output = converter.to_database_format(contentstate)
+        assert "<ul>" in output
+        assert 'data-dtu-text-align="end"' in output
+        assert ">Two</li>" in output
+
+    def test_heading_with_bold_and_text_style_round_trip(self):
+        import json
+
+        from wagtail.admin.rich_text.converters.contentstate import (
+            ContentstateConverter,
+        )
+
+        converter = ContentstateConverter(
+            features=["h2", "bold", "text-style-entity", "text-alignment"]
+        )
+        html = (
+            "<h2>Hello <b>bold "
+            '<span data-entity-type="TEXT_STYLE" '
+            'style="font-size: 18px !important;">styled</span></b></h2>'
+        )
+
+        contentstate = converter.from_database_format(html)
+        blocks = json.loads(contentstate)["blocks"]
+        assert blocks[0]["type"] == "header-two"
+        assert any(
+            style_range["style"] == "BOLD"
+            for style_range in blocks[0]["inlineStyleRanges"]
+        )
+        assert blocks[0]["entityRanges"]
+
+        output = converter.to_database_format(contentstate)
+        assert "<h2" in output
+        assert "<b>" in output
+        assert 'data-entity-type="TEXT_STYLE"' in output
+        assert "font-size: 18px !important" in output
 
 
 class TestStyledLinkElementHandler:

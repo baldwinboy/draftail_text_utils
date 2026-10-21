@@ -23,6 +23,7 @@
   margin: 0;
   z-index: 100;
   background: var(--w-color-surface-page, #fff);
+  color: var(--w-color-text-context, #1a1a1a);
   border: 1px solid var(--w-color-border-furniture, #ddd);
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);

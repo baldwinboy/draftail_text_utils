@@ -85,7 +85,7 @@ src/draftail_text_utils/
 | `highlight-color` | Control (TEXT_STYLE entity) | `highlight_color.js` + `common.js` | `highlight_color.css` | Apply/remove highlight colour |
 | `font-family` | InlineStyle (per family) + Control | `font_family.js` | `font_family.css` | Font family dropdown |
 | `font-size` | Control (TEXT_STYLE entity) | `font_size.js` | `font_size.css` | Size input + presets (honours MIN/MAX/STEP) |
-| `text-alignment` | Block + Control | `text_alignment.js` | `text_alignment.css` | Alignment button group |
+| `text-alignment` | Block data + Control | `text_alignment.js` | `text_alignment.css` | Alignment button group; preserves heading/list block types |
 
 ## Configuration
 

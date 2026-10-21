@@ -58,8 +58,10 @@ def register_text_style_feature(features):
     text_style.register(features)
 
 
-@hooks.register("register_rich_text_features")
+@hooks.register("register_rich_text_features", order=100)
 def register_text_alignment_feature(features):
+    # Run after Wagtail's built-in block features so the alignment converter
+    # rule is applied after (and can therefore override) their block maps.
     text_alignment.register(features)
 
 

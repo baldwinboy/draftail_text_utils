@@ -49,9 +49,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   increment/decrement buttons.
 * Text alignment and colour swatches no longer rely on typed CSS `attr()`,
   which is not supported in all browsers.
+* The font-size input no longer closes the floating toolbar while it is being
+  edited.
+* Dropdown options are readable when the toolbar is floating/detached, and the
+  current font-size preset is highlighted correctly.
+* Text alignment now coexists with heading and list block types instead of
+  replacing them.
 
 ### Changed
 
+* Text alignment is stored in block `data` and rendered on the original
+  element (`h2`, `h3`, `li`, etc.) rather than as an `ALIGNMENT_*` block type.
+  Existing `div.dtu-block_text-align` content continues to load.
 * Corrected documentation to reference the `text-style-entity` feature (the
   previous `styled-link` name did not exist).
 

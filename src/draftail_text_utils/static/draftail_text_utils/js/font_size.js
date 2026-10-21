@@ -38,6 +38,12 @@
   const entityType = 'TEXT_STYLE';
   const control = dt.parseControl('font-size');
 
+  function normaliseSize(value) {
+    if (value === null || value === undefined || value === '') return '';
+    var parsed = parseInt(value, 10);
+    return isNaN(parsed) ? String(value) : String(parsed);
+  }
+
   // The control component
   var FontSizeControl = class FontSizeControl extends React.Component {
     constructor(props) {
@@ -48,16 +54,19 @@
         isInputFocused: false,
       };
       this.controlRef = React.createRef();
+      this.replaceOnNextDigit = false;
     }
 
     // lifecycle
     componentDidMount() {
       this.syncInputValue();
       document.addEventListener('mousedown', this.handleClickOutside);
+      document.addEventListener('keydown', this.handleDocumentKeyDown, true);
     }
 
     componentWillUnmount() {
       document.removeEventListener('mousedown', this.handleClickOutside);
+      document.removeEventListener('keydown', this.handleDocumentKeyDown, true);
     }
 
     componentDidUpdate() {
@@ -65,9 +74,9 @@
     }
 
     // helpers
-    getActiveSize() {
+    getActiveSize(editorState) {
       return dt.getActiveEntityData(
-        this.props.getEditorState(),
+        editorState || this.props.getEditorState(),
         entityType,
         'size',
       );
@@ -79,31 +88,33 @@
         return;
       }
 
-      var activeSize = this.getActiveSize();
-      var newValue = activeSize || '';
+      var newValue = normaliseSize(this.getActiveSize());
 
       if (this.state.inputValue !== newValue) {
         this.setState({ inputValue: newValue });
       }
     }
 
-    toggleDropdown(force) {
-      const willBeOpen =
-        typeof force === 'boolean' ? force : !this.state.isDropdownOpen;
-      if (willBeOpen && !this.state.isDropdownOpen) {
-        dt.saveSelection(this.props.getEditorState);
-      }
-      this.setState({ isDropdownOpen: willBeOpen });
+    stopEditing() {
+      this.replaceOnNextDigit = false;
+      this.setState({ isDropdownOpen: false, isInputFocused: false }, () => {
+        this.syncInputValue();
+      });
     }
 
     applyFontSize(size) {
       var editorState = dt.restoreSelection(this.props.getEditorState());
-      var currentSize = this.getActiveSize(editorState);
+      var currentSize = normaliseSize(this.getActiveSize(editorState));
 
-      if (size === currentSize) {
+      if (String(size) === currentSize) {
         editorState = dt.removeStyleProperty(editorState, entityType, 'size');
         this.props.onChange(editorState);
-        this.setState({ isDropdownOpen: false, inputValue: '' });
+        this.replaceOnNextDigit = false;
+        this.setState({
+          isDropdownOpen: false,
+          isInputFocused: false,
+          inputValue: '',
+        });
         this.syncInputValue();
         return;
       }
@@ -112,82 +123,132 @@
       this.props.onChange(newContent);
 
       // Re-sync the input value
-      this.setState({ isDropdownOpen: false, inputValue: String(size) });
+      this.replaceOnNextDigit = false;
+      this.setState({
+        isDropdownOpen: false,
+        isInputFocused: false,
+        inputValue: String(size),
+      });
       this.syncInputValue();
     }
 
     increment() {
-      var activeSize = this.getActiveSize();
-      var currentSize = isNaN(activeSize || this.state.inputValue || 'NaN')
-        ? 16
-        : parseInt(activeSize || this.state.inputValue);
+      var value =
+        this.state.isInputFocused && this.state.inputValue
+          ? this.state.inputValue
+          : this.getActiveSize();
+      var currentSize = isNaN(value || 'NaN') ? 16 : parseInt(value);
       this.applyFontSize(Math.min(MAX_FONT_SIZE, currentSize + FONT_SIZE_STEP));
     }
 
     decrement() {
-      var activeSize = this.getActiveSize();
-      var currentSize = isNaN(activeSize || this.state.inputValue || 'NaN')
-        ? 16
-        : parseInt(activeSize || this.state.inputValue);
+      var value =
+        this.state.isInputFocused && this.state.inputValue
+          ? this.state.inputValue
+          : this.getActiveSize();
+      var currentSize = isNaN(value || 'NaN') ? 16 : parseInt(value);
       this.applyFontSize(Math.max(MIN_FONT_SIZE, currentSize - FONT_SIZE_STEP));
     }
 
     // event handlers
     handleInputMouseDown = (e) => {
-      this.toggleDropdown();
-    };
-
-    handleInputFocus = () => {
+      // Do not focus the input: that would blur the editor, clear Draftail's
+      // selection focus, and unmount the floating toolbar. Keep the editor
+      // focused and route keyboard input to the control instead.
+      e.preventDefault();
       dt.saveSelection(this.props.getEditorState);
-      this.setState({ isInputFocused: true });
-      if (!this.state.isDropdownOpen) {
-        this.setState({ isDropdownOpen: true });
-      }
+      this.replaceOnNextDigit = true;
+      this.setState({ isDropdownOpen: true, isInputFocused: true });
     };
 
-    handleInputBlur = () => {
-      // When leaving the field, clear the focus flag and re‑sync (will clear if no style)
-      this.setState({ isInputFocused: false }, () => {
-        this.syncInputValue();
-      });
-    };
+    handleDocumentKeyDown = (e) => {
+      if (!this.state.isInputFocused) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-    handleInputChange = (e) => {
-      this.setState({ inputValue: e.target.value.replace(/[^0-9]/g, '') });
-    };
-
-    handleInputKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        this.toggleDropdown(false);
-        this.syncInputValue();
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        var nextValue = this.replaceOnNextDigit
+          ? e.key
+          : (this.state.inputValue || '') + e.key;
+        this.replaceOnNextDigit = false;
+        this.setState({ inputValue: nextValue });
         return;
       }
 
-      if (['ArrowUp', 'ArrowDown', 'Enter'].includes(e.key)) {
+      if (e.key === 'Backspace') {
         e.preventDefault();
-        if (e.key === 'Enter') {
-          var size = parseInt(this.state.inputValue, 10);
-          if (size >= MIN_FONT_SIZE && size <= MAX_FONT_SIZE) {
-            this.applyFontSize(size);
-          } else {
-            this.syncInputValue();
-          }
-          return;
-        }
+        e.stopPropagation();
+        this.replaceOnNextDigit = false;
+        this.setState({
+          inputValue: (this.state.inputValue || '').slice(0, -1),
+        });
+        return;
+      }
 
-        if (e.key === 'ArrowUp') {
-          this.increment();
-          return;
-        }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        e.stopPropagation();
+        this.increment();
+        return;
+      }
 
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        e.stopPropagation();
         this.decrement();
         return;
+      }
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        var size = parseInt(this.state.inputValue, 10);
+        if (size >= MIN_FONT_SIZE && size <= MAX_FONT_SIZE) {
+          this.applyFontSize(size);
+        } else {
+          this.stopEditing();
+        }
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        this.stopEditing();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        this.stopEditing();
+        return;
+      }
+
+      // Keep all other typing/navigation out of the editor while the control
+      // is capturing input.
+      if (
+        e.key.length === 1 ||
+        [
+          'Delete',
+          'Home',
+          'End',
+          'PageUp',
+          'PageDown',
+          'ArrowLeft',
+          'ArrowRight',
+        ].includes(e.key)
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
       }
     };
 
     handleClickOutside = (event) => {
       if (dt.clickOutsideGuard(this.controlRef, event)) {
-        this.setState({ isDropdownOpen: false });
+        this.replaceOnNextDigit = false;
+        this.setState({ isDropdownOpen: false, isInputFocused: false }, () => {
+          this.syncInputValue();
+        });
       }
     };
 
@@ -201,7 +262,8 @@
             this.applyFontSize(opt.size);
           },
           'className': 'Draftail--dtu-option Draftail--font-size-option',
-          'aria-selected': this.state.inputValue === opt.size,
+          'aria-selected':
+            normaliseSize(this.state.inputValue) === String(opt.size),
         },
         opt.label,
       );
@@ -209,7 +271,6 @@
 
     // render
     render() {
-      var activeSize = this.getActiveSize();
       var inputDisplay = this.state.inputValue;
       var isDropdownExpanded = this.state.isDropdownOpen;
       var dropdown = React.createElement(
@@ -256,14 +317,10 @@
           id: 'Draftail--font-size-input',
           className: 'Draftail--font-size-input',
           type: 'text',
-          defaultValue: activeSize || '',
           value: inputDisplay,
           placeholder: 'Font Size',
+          tabIndex: -1,
           onMouseDown: this.handleInputMouseDown,
-          onFocus: this.handleInputFocus,
-          onBlur: this.handleInputBlur,
-          onChange: this.handleInputChange,
-          onKeyDown: this.handleInputKeyDown,
         }),
       );
 
