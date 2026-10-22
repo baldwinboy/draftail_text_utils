@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.3](https://github.com/baldwinboy/draftail_text_utils/compare/v3.0.2...v3.0.3) (2026-10-21)
+
+
+### Bug Fixes
+
+* allow coexistence with heading modifiers ([0231f5e](https://github.com/baldwinboy/draftail_text_utils/commit/0231f5e8a6eac5088275cea0c9b26d9290ce2212))
+
 ## [3.0.2](https://github.com/baldwinboy/draftail_text_utils/compare/v3.0.1...v3.0.2) (2026-10-19)
 
 
